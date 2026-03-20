@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .job {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+
+    .job h3 {
+      margin: 0;
+      color: #007bff;
+    }
+
+    .form {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    input {
+      margin: 5px;
+      padding: 8px;
+      width: 200px;
+    }
+
+    button {
+      padding: 8px 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Job Portal</h1>
+
+<div class="form">
+  <h3>Thêm công việc</h3>
+  <input id="title" placeholder="Title">
+  <input id="description" placeholder="Description">
+  <input id="company" placeholder="Company">
+  <input id="salary" placeholder="Salary">
+  <br>
+  <button onclick="addJob()">Add Job</button>
+</div>
+
+<h2>📋 Danh sách việc làm</h2>
+<div id="jobs"></div>
+
+<script>
+function loadJobs() {
+  fetch("http://localhost:8080/jobs")
+    .then(res => res.json())
+    .then(data => {
+      let html = "";
+      data.forEach(job => {
+        html += `
+          <div class="job">
+            <h3>${job.title}</h3>
+            <p>${job.description}</p>
+            <p><b>Công ty:</b> ${job.company}</p>
+            <p><b>Lương:</b> ${job.salary}</p>
+          </div>
+        `;
+      });
+      document.getElementById("jobs").innerHTML = html;
+    });
+}
+
+function addJob() {
+  const job = {
+    title: document.getElementById("title").value,
+    description: document.getElementById("description").value,
+    company: document.getElementById("company").value,
+    salary: parseFloat(document.getElementById("salary").value)
+  };
+
+  fetch("http://localhost:8080/jobs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(job)
+  })
+  .then(res => res.json())
+  .then(() => {
+    loadJobs(); // reload list
+  });
+}
+
+// load lần đầu
+loadJobs();
+</script>
+
+</body>
+</html>
