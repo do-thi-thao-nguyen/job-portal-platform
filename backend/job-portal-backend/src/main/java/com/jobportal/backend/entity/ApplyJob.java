@@ -13,7 +13,7 @@ public class ApplyJob {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username; // ai apply
+    private String username;
 
-    private Long jobId; // job nào apply
+    private Long jobId;
 }

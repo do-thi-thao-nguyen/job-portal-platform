@@ -8,4 +8,6 @@ import java.util.List;
 public interface ApplyJobRepository extends JpaRepository<ApplyJob, Long> {
 
     List<ApplyJob> findByUsername(String username);
+
+    boolean existsByUsernameAndJobId(String username, Long jobId);
 }
