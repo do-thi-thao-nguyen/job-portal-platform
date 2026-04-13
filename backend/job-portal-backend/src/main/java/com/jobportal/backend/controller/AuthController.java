@@ -14,23 +14,26 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    // REGISTER
     @PostMapping("/register")
     public User register(@RequestBody User user) {
         return userRepository.save(user);
     }
 
-    @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
+   @PostMapping("/login")
+public String login(@RequestBody User user) {
 
-        if (existingUser == null) {
-            throw new RuntimeException("User not found");
-        }
+    User existingUser = userRepository.findByEmail(user.getEmail());
 
-        if (!existingUser.getPassword().equals(user.getPassword())) {
-            throw new RuntimeException("Wrong password");
-        }
-
-        return JwtUtil.generateToken(existingUser.getUsername());
+    if (existingUser == null) {
+        throw new RuntimeException("User not found");
     }
+
+    if (!existingUser.getPassword().equals(user.getPassword())) {
+        throw new RuntimeException("Wrong password");
+    }
+
+    // 🔥 TRẢ TOKEN
+    return JwtUtil.generateToken(existingUser.getEmail());
+}
 }
