@@ -1,13 +1,19 @@
 package com.jobportal.backend.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.JobRepository;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/jobs")
@@ -16,26 +22,26 @@ public class JobController {
     @Autowired
     private JobRepository jobRepository;
 
-    // ✅ CREATE
+    // CREATE
     @PostMapping
     public Job createJob(@RequestBody Job job) {
         return jobRepository.save(job);
     }
 
-    // ✅ GET ALL
+    // GET ALL
     @GetMapping
     public List<Job> getAllJobs() {
         return jobRepository.findAll();
     }
 
-    // ✅ GET BY ID (nên có luôn)
+    // GET BY ID (nên có luôn)
     @GetMapping("/{id}")
     public Job getJobById(@PathVariable Long id) {
         return jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
-    // 🔥 UPDATE
+    // UPDATE
     @PutMapping("/{id}")
     public Job updateJob(@PathVariable Long id, @RequestBody Job updatedJob) {
 
@@ -50,7 +56,7 @@ public class JobController {
         return jobRepository.save(job);
     }
 
-    // 🔥 DELETE
+    // DELETE
     @DeleteMapping("/{id}")
     public String deleteJob(@PathVariable Long id) {
 

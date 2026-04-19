@@ -1,6 +1,11 @@
 package com.jobportal.backend.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Application {
@@ -12,6 +17,8 @@ public class Application {
     private String email; // ứng viên
 
     private String cvUrl;
+
+    private String status;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
@@ -25,6 +32,9 @@ public class Application {
 
     public String getCvUrl() { return cvUrl; }
     public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }

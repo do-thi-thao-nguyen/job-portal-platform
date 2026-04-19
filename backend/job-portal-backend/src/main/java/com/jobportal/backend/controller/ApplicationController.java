@@ -1,14 +1,22 @@
 package com.jobportal.backend.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.jobportal.backend.entity.Application;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.ApplicationRepository;
 import com.jobportal.backend.repository.JobRepository;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/applications")
@@ -20,7 +28,7 @@ public class ApplicationController {
     @Autowired
     private JobRepository jobRepository;
 
-    // ✅ APPLY JOB
+    // APPLY JOB
     @PostMapping("/{jobId}")
     public Application apply(@PathVariable Long jobId, @RequestBody Application app) {
 
@@ -28,17 +36,27 @@ public class ApplicationController {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         app.setJob(job);
+        app.setStatus("PENDING");
 
         return applicationRepository.save(app);
     }
 
-    // ✅ XEM ỨNG VIÊN THEO JOB
+    // XEM ỨNG VIÊN THEO JOB
     @GetMapping("/job/{jobId}")
     public List<Application> getByJob(@PathVariable Long jobId) {
         return applicationRepository.findByJobId(jobId);
     }
 
-    // ✅ UPDATE APPLICATION
+    // SEARCH / FILTER CV
+    @GetMapping("/job/{jobId}/search")
+    public List<Application> search(
+            @PathVariable Long jobId,
+            @RequestParam String email
+    ) {
+        return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
+    }
+
+    // UPDATE APPLICATION
     @PutMapping("/{id}")
     public Application updateApplication(@PathVariable Long id,
                                          @RequestBody Application updated) {
@@ -52,7 +70,32 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // ✅ DELETE APPLICATION
+    // CONTACT ỨNG VIÊN
+    @PutMapping("/{id}/contact")
+    public Application contact(@PathVariable Long id) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        app.setStatus("CONTACTED");
+
+        return applicationRepository.save(app);
+    }
+
+    // UPDATE STATUS (LINH HOẠT)
+    @PutMapping("/{id}/status")
+    public Application updateStatus(@PathVariable Long id,
+                                   @RequestParam String status) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        app.setStatus(status);
+
+        return applicationRepository.save(app);
+    }
+
+    // DELETE APPLICATION
     @DeleteMapping("/{id}")
     public String deleteApplication(@PathVariable Long id) {
 
