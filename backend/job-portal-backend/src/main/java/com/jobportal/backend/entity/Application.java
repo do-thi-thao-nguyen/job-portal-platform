@@ -20,6 +20,8 @@ public class Application {
 
     private String status;
 
+    private String message; 
+
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;
@@ -38,4 +40,7 @@ public class Application {
 
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }
+
+    public String getMessage() {return message;}
+    public void setMessage(String message) {this.message = message;}
 }

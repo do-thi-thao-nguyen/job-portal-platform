@@ -3,15 +3,7 @@ package com.jobportal.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.backend.entity.Application;
 import com.jobportal.backend.entity.Job;
@@ -36,7 +28,7 @@ public class ApplicationController {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         app.setJob(job);
-        app.setStatus("PENDING");
+        app.setStatus("PENDING"); // mặc định
 
         return applicationRepository.save(app);
     }
@@ -49,10 +41,9 @@ public class ApplicationController {
 
     // SEARCH / FILTER CV
     @GetMapping("/job/{jobId}/search")
-    public List<Application> search(
-            @PathVariable Long jobId,
-            @RequestParam String email
-    ) {
+    public List<Application> search(@PathVariable Long jobId,
+                                    @RequestParam String email) {
+
         return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
     }
 
@@ -70,19 +61,21 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // CONTACT ỨNG VIÊN
+    // CONTACT ỨNG VIÊN (ĐÚNG CHUẨN)
     @PutMapping("/{id}/contact")
-    public Application contact(@PathVariable Long id) {
+    public Application contact(@PathVariable Long id,
+                               @RequestBody Application updated) {
 
         Application app = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         app.setStatus("CONTACTED");
+        app.setMessage(updated.getMessage());
 
         return applicationRepository.save(app);
     }
 
-    // UPDATE STATUS (LINH HOẠT)
+    // UPDATE STATUS
     @PutMapping("/{id}/status")
     public Application updateStatus(@PathVariable Long id,
                                    @RequestParam String status) {
