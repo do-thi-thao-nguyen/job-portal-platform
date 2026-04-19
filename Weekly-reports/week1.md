@@ -2,7 +2,7 @@
 
 **Tuần:** 1 (02/03/2026 - 08/03/2026)
 **Nhóm:** Nhóm 12
-**Đề tài:** JP01 - Job Portal Platform
+**Đề tài:** Job Portal Platform
 **Nhóm trưởng:** Đỗ Thị Thảo Nguyên - 2251010064
 
 ---
@@ -43,5 +43,5 @@ Cần hỗ trợ thêm về cách tối ưu bảo mật (JWT, password hashing)
 
 ---
 
-*Ngày nộp: 16/04/2026 (nộp bổ sung)*
+*Ngày nộp: 19/04/2026 (nộp bổ sung)*  
 *Xác nhận của Nhóm trưởng: Đỗ Thị Thảo Nguyên*

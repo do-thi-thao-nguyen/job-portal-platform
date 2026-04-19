@@ -9,42 +9,42 @@
 
 ## 1. Công việc đã hoàn thành
 
-| Thành viên         | MSSV       | Công việc                                                                                        | Link Commit |
-| ------------------ | ---------- | ------------------------------------------------------------------------------------------------ | ----------- |
-| Đỗ Thị Thảo Nguyên | 2251010064 | Tích hợp Spring Security; hoàn thiện JWT authentication; hoàn thiện Job API và cập nhật hệ thống | GitHub      |
-| Trương Ngọc Xuân Nhi      | 2251010068 | Tham gia thảo luận hướng triển khai; hỗ trợ review logic và cấu trúc project                     | -           |
+| Thành viên           | MSSV       | Công việc                                                                                 | Link Commit |
+| -------------------- | ---------- | ----------------------------------------------------------------------------------------- | ----------- |
+| Đỗ Thị Thảo Nguyên   | 2251010064 | Tham gia thảo luận kiến trúc hệ thống, triển khai Spring Security và JWT authentication   | -           |
+| Trương Ngọc Xuân Nhi | 2251010068 | Tham gia thảo luận kiến trúc, hỗ trợ thiết kế logic hệ thống và phối hợp xây dựng Job API | -           |
 
 ---
 
 ## 2. Tiến độ tổng thể
 
-| Hạng mục           | Trạng thái   | %    |
-| ------------------ | ------------ | ---- |
-| Phân tích yêu cầu  | Done         | 100% |
-| Thiết kế kiến trúc | Done         | 95%  |
-| Backend API        | Đang làm     | 75%  |
-| Frontend UI        | Đang làm     | 60%  |
+| Hạng mục           | Trạng thái | %    |
+| ------------------ | ---------- | ---- |
+| Phân tích yêu cầu  | Done       | 100% |
+| Thiết kế kiến trúc | Done       | 95%  |
+| Backend API        | Đang làm   | 60%  |
+| Frontend UI        | Đang làm   | 50%  |
 
-**Tổng tiến độ: ~60%**
+**Tổng tiến độ: ~55%**
 
 ---
 
-## 3. Kế hoạch tuần tới  
+## 3. Kế hoạch tuần tới
 
-| Thành viên | Công việc dự kiến |
-|------------|------------------|
-| Đỗ Thị Thảo Nguyên | Hoàn thiện các trang frontend (UI pages), tích hợp frontend với backend API |
-| Trương Ngọc Xuân Nhi | Refactor chức năng apply job, sửa lỗi đăng nhập bằng email, tối ưu cấu trúc project |
+| Thành viên           | Công việc dự kiến                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| Đỗ Thị Thảo Nguyên   | Hoàn thiện Application CRUD, tích hợp JWT authentication và xử lý logic ứng tuyển  |
+| Trương Ngọc Xuân Nhi | Xây dựng và hoàn thiện chức năng apply job, phát triển các API liên quan recruiter |
 
 ---
 
 ## 4. Khó khăn / Cần hỗ trợ
 
-* [ ] Cấu hình Spring Security và JWT phức tạp, dễ phát sinh lỗi
-* [ ] Lỗi 403 và xác thực token gây khó khăn trong quá trình test
-* [ ] Chưa đồng bộ hoàn toàn giữa frontend và backend
+* [ ] Chưa sắp xếp được thời gian làm việc nhóm hợp lý do các thành viên có lịch học và công việc cá nhân
+* [ ] Tiến độ một số công việc chưa đạt như kế hoạch đề ra trong tuần
+* [ ] Cần cải thiện việc phân chia và theo dõi tiến độ công việc giữa các thành viên
 
 ---
 
-*Ngày nộp: 16/04/2026 (nộp bổ sung)*
+*Ngày nộp: 19/04/2026 (nộp bổ sung)*  
 *Xác nhận của Nhóm trưởng: Đỗ Thị Thảo Nguyên*

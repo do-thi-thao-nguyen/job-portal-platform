@@ -44,6 +44,5 @@
 * [ ] Cần hỗ trợ định hướng tổ chức project hiệu quả hơn
 
 ---
-
-*Ngày nộp: 16/04/2026 (nộp bổ sung)*
+*Ngày nộp: 19/04/2026 (nộp bổ sung)*  
 *Xác nhận của Nhóm trưởng: Đỗ Thị Thảo Nguyên*
