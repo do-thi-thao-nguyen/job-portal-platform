@@ -3,40 +3,62 @@ package com.jobportal.backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.jobportal.backend.entity.Package;
-import com.jobportal.backend.repository.PackageRepository;
+import com.jobportal.backend.entity.Company;
+import com.jobportal.backend.entity.CompanyPackage;
+import com.jobportal.backend.repository.CompanyPackageRepository;
+import com.jobportal.backend.repository.CompanyRepository;
 
 @RestController
 @RequestMapping("/packages")
 public class PackageController {
 
     @Autowired
-    private PackageRepository packageRepository;
+    private CompanyPackageRepository companyPackageRepository;
 
-    // tạo package
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    // =============================
+    // CREATE PACKAGE (Admin tạo gói)
+    // =============================
     @PostMapping
-    public Package create(@RequestBody Package pkg) {
-        return packageRepository.save(pkg);
+    public CompanyPackage create(@RequestBody CompanyPackage pkg) {
+        pkg.setStatus("AVAILABLE");
+        return companyPackageRepository.save(pkg);
     }
 
-    // list package
+    // =============================
+    // GET ALL PACKAGES
+    // =============================
     @GetMapping
-    public List<Package> getAll() {
-        return packageRepository.findAll();
+    public List<CompanyPackage> getAll() {
+        return companyPackageRepository.findAll();
     }
 
-    // mua package (fake)
-    @PostMapping("/buy")
-    public String buy(@RequestParam Long packageId,
-                      @RequestParam Long companyId) {
+    // =============================
+    // GET PACKAGES BY COMPANY
+    // =============================
+    @GetMapping("/company/{companyId}")
+    public List<CompanyPackage> getByCompany(@PathVariable Long companyId) {
+        return companyPackageRepository.findByCompanyId(companyId);
+    }
 
-        return "Company " + companyId + " bought package " + packageId;
+    // =============================
+    // BUY PACKAGE
+    // =============================
+    @PostMapping("/buy")
+    public CompanyPackage buy(@RequestBody CompanyPackage pkg) {
+
+        Long companyId = pkg.getCompany().getId();
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        pkg.setCompany(company);
+        pkg.setStatus("ACTIVE");
+
+        return companyPackageRepository.save(pkg);
     }
 }

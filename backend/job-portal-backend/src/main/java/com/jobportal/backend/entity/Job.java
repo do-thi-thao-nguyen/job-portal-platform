@@ -11,7 +11,11 @@ public class Job {
 
     private String title;
     private String description;
-    private String company;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
+
     private Double salary;
 
     // Getter + Setter
@@ -25,8 +29,8 @@ public class Job {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getCompany() { return company; }
-    public void setCompany(String company) { this.company = company; }
+    public Company getCompany() { return company; }
+    public void setCompany(Company company) { this.company = company; }
 
     public Double getSalary() { return salary; }
     public void setSalary(Double salary) { this.salary = salary; }

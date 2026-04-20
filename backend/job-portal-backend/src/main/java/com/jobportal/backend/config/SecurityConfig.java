@@ -19,6 +19,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/packages/**").permitAll()
             .requestMatchers("/applications/**").permitAll()
             .requestMatchers("/jobs/**").permitAll()
+            .requestMatchers("/company/**").permitAll()
             .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // 🔥 FIX CHÍNH
             .anyRequest().authenticated()
         )
