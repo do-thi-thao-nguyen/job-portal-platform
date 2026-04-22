@@ -5,13 +5,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -23,39 +25,50 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // 🔥 BỎ QUA LOGIN + REGISTER
-        if (
-            path.startsWith("/auth") ||
-            path.startsWith("/applications") ||
-            path.startsWith("/jobs") ||
-            path.startsWith("/company") ||
-            path.startsWith("/packages")
-        ) {
+        // ✅ CHỈ bỏ qua AUTH (login/register)
+        if (path.startsWith("/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+        // Không có token → cho đi tiếp (Security sẽ xử lý 403 nếu cần)
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            String token = header.substring(7);
+        String token = header.substring(7);
 
-            String email = JwtUtil.validateToken(token);
+        Claims claims = JwtUtil.validateToken(token);
 
-            if (email != null) {
+        // Token invalid → bỏ qua
+        if (claims == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                Collections.emptyList()
-                        );
+        String email = claims.getSubject();
+        String role = claims.get("role", String.class);
 
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        // 🔥 Tránh set auth nhiều lần
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+            List<SimpleGrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_" + role)
+            );
+
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            email,
+                            null,
+                            authorities
+                    );
+
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);

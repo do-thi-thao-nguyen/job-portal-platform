@@ -12,13 +12,16 @@ public class Job {
     private String title;
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private JobStatus status;
+
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
     private Double salary;
 
-    // Getter + Setter
+    // ===== GETTER + SETTER =====
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -28,6 +31,9 @@ public class Job {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public JobStatus getStatus() { return status; } 
+    public void setStatus(JobStatus status) { this.status = status; } 
 
     public Company getCompany() { return company; }
     public void setCompany(Company company) { this.company = company; }

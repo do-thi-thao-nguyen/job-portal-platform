@@ -1,10 +1,7 @@
 package com.jobportal.backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -16,7 +13,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email;     // 🔥 dùng email để login
+    private String email;
     private String password;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
+
