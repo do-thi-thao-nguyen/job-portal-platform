@@ -1,6 +1,6 @@
 package com.jobportal.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,8 +15,17 @@ public class User {
 
     private String email;
     private String password;
+    private LocalDateTime createdAt;
+
+    @Transient
+    private String companyName;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @PrePersist
+    public void prePersist() {
+    this.createdAt = LocalDateTime.now();
+}
 }
 

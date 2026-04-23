@@ -4,8 +4,13 @@ import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.entity.JobStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByStatus(JobStatus status);
+    long count();
+    long countByStatus(JobStatus status);
+    long countByCategory_Id(Long categoryId);
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

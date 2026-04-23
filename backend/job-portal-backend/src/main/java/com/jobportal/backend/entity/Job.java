@@ -1,5 +1,7 @@
 package com.jobportal.backend.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -11,15 +13,26 @@ public class Job {
 
     private String title;
     private String description;
+    private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;
+
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
 
     private Double salary;
+
+    @PrePersist
+    public void prePersist() {
+    this.createdAt = LocalDateTime.now();
+}
 
     // ===== GETTER + SETTER =====
 
@@ -40,4 +53,10 @@ public class Job {
 
     public Double getSalary() { return salary; }
     public void setSalary(Double salary) { this.salary = salary; }
+
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

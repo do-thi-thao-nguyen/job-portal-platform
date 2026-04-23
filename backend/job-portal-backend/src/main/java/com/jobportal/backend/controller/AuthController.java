@@ -21,65 +21,46 @@ public class AuthController {
     private CompanyRepository companyRepository;
 
     // =========================
-    // REGISTER USER (ỨNG VIÊN)
+    // REGISTER (AUTO USER / EMPLOYER)
     // =========================
     @PostMapping("/register")
-    public User register(@RequestBody User user) {
+    public User register(@RequestBody User user,
+                        @RequestParam(required = false) String companyName) {
 
         System.out.println("EMAIL: " + user.getEmail());
         System.out.println("PASS: " + user.getPassword());
+        System.out.println("COMPANY: " + companyName);
 
         if (user.getEmail() == null || user.getPassword() == null) {
             throw new RuntimeException("Email & password required");
         }
 
-        // 🔥 FIX: không cho trùng email
+        // check trùng email
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        // 🔥 FIX: luôn set role USER
-        user.setRole(Role.USER);
+        // 🔥 EMPLOYER
+        if (companyName != null && !companyName.isBlank()) {
 
-        return userRepository.save(user);
+            user.setRole(Role.EMPLOYER);
+            userRepository.save(user);
+
+            Company company = new Company();
+            company.setName(companyName);
+            company.setEmployer(user);
+
+            companyRepository.save(company);
+
+        } else {
+            // 🔥 USER
+            user.setRole(Role.USER);
+            userRepository.save(user);
+        }
+
+        return user;
     }
-
-    // =========================
-    // REGISTER EMPLOYER + COMPANY
-    // =========================
-    @PostMapping("/register-employer")
-    public String registerEmployer(@RequestBody User user,
-                                   @RequestParam String companyName) {
-
-        if (user.getEmail() == null || user.getPassword() == null) {
-            throw new RuntimeException("Email & password required");
-        }
-
-        if (companyName == null || companyName.isEmpty()) {
-            throw new RuntimeException("Company name required");
-        }
-
-        // 🔥 check trùng email
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        // 🔥 set role EMPLOYER
-        user.setRole(Role.EMPLOYER);
-
-        userRepository.save(user);
-
-        // 🔥 tạo company
-        Company company = new Company();
-        company.setName(companyName);
-        company.setEmployer(user);
-
-        companyRepository.save(company);
-
-        return "Register employer success";
-    }
-
-    // =========================
+        // =========================
     // LOGIN
     // =========================
     @PostMapping("/login")

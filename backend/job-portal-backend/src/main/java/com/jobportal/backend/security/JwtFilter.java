@@ -25,7 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // ✅ CHỈ bỏ qua AUTH (login/register)
+        // ✅ chỉ bỏ qua login/register
         if (path.startsWith("/auth")) {
             filterChain.doFilter(request, response);
             return;
@@ -33,7 +33,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        // Không có token → cho đi tiếp (Security sẽ xử lý 403 nếu cần)
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -43,7 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         Claims claims = JwtUtil.validateToken(token);
 
-        // Token invalid → bỏ qua
         if (claims == null) {
             filterChain.doFilter(request, response);
             return;
@@ -52,25 +50,26 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = claims.getSubject();
         String role = claims.get("role", String.class);
 
-        // 🔥 Tránh set auth nhiều lần
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            List<SimpleGrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_" + role)
-            );
-
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            authorities
-                    );
-
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        // 🔥 FIX ROLE chuẩn
+        if (role != null && role.startsWith("ROLE_")) {
+            role = role.substring(5);
         }
+
+        List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + role)
+        );
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        email,
+                        null,
+                        authorities
+                );
+
+        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }
-}
+}   
