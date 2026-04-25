@@ -1,19 +1,53 @@
 package com.jobportal.backend.entity;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Data
 @Entity
+@Table(name = "apply_jobs")
 public class ApplyJob {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
+    // ===== USER =====
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    private Long jobId;
+    // ===== JOB =====
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
+
+    // ===== STATUS =====
+    @Enumerated(EnumType.STRING)
+    private ApplyStatus status;
+
+    // ===== TIME =====
+    private LocalDateTime appliedAt;
+
+    // ===== AUTO SET =====
+    @PrePersist
+    public void prePersist() {
+        this.appliedAt = LocalDateTime.now();
+        this.status = ApplyStatus.APPLIED;
+    }
 }

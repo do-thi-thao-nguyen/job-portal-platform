@@ -5,19 +5,21 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Table;
+import lombok.Data;
 
+@Data
 @Entity
-@Getter @Setter
+@Table(name = "favorite_jobs")
 public class FavoriteJob {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long jobId;
-
     @ManyToOne
     private User user;
+
+    @ManyToOne
+    private Job job;
 }

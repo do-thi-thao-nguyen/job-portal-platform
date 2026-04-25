@@ -2,61 +2,63 @@ package com.jobportal.backend.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Data
 @Entity
+@Table(name = "jobs")
 public class Job {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
-    private LocalDateTime createdAt;
+
+    private String location;
+
+    private Double salaryMin;
+    private Double salaryMax;
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private JobType jobType;
 
-    @ManyToOne
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    private LocalDateTime expiredAt;
+
+    // ===== FIX Ở ĐÂY =====
+
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToOne
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id")
     private Company company;
-
-    private Double salary;
-
-    @PrePersist
-    public void prePersist() {
-    this.createdAt = LocalDateTime.now();
-}
-
-    // ===== GETTER + SETTER =====
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public JobStatus getStatus() { return status; } 
-    public void setStatus(JobStatus status) { this.status = status; } 
-
-    public Company getCompany() { return company; }
-    public void setCompany(Company company) { this.company = company; }
-
-    public Double getSalary() { return salary; }
-    public void setSalary(Double salary) { this.salary = salary; }
-
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -1,13 +1,17 @@
 package com.jobportal.backend.repository;
 
-import com.jobportal.backend.entity.ApplyJob;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.jobportal.backend.entity.ApplyJob;
 
 public interface ApplyJobRepository extends JpaRepository<ApplyJob, Long> {
 
-    List<ApplyJob> findByUsername(String username);
+    boolean existsByUserIdAndJobId(Long userId, Long jobId);
 
-    boolean existsByUsernameAndJobId(String username, Long jobId);
+    List<ApplyJob> findByUserId(Long userId);
+
+    Optional<ApplyJob> findByUserIdAndJobId(Long userId, Long jobId);
 }

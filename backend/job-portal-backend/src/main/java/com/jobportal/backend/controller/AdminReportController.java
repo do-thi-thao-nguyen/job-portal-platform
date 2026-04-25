@@ -34,19 +34,30 @@ public class AdminReportController {
 
         Map<String, Object> report = new HashMap<>();
 
-        // USER
-        report.put("totalUsers", userRepository.count());
-        report.put("totalEmployers", userRepository.countByRole("EMPLOYER")); // 🔥 FIX
+        // ===== USER =====
+        long totalUsers = userRepository.count();
+        long totalEmployers = userRepository.countByRole("EMPLOYER");
 
-        // COMPANY
-        report.put("totalCompanies", companyRepository.count());
-        report.put("pendingCompanies", companyRepository.countByStatus(CompanyStatus.PENDING));
+        // ===== COMPANY =====
+        long totalCompanies = companyRepository.count();
+        long pendingCompanies = companyRepository.countByStatus(CompanyStatus.PENDING);
 
-        // JOB
-        report.put("totalJobs", jobRepository.count());
-        report.put("pendingJobs", jobRepository.countByStatus(JobStatus.PENDING));
-        report.put("approvedJobs", jobRepository.countByStatus(JobStatus.APPROVED));
+        // ===== JOB =====
+        long totalJobs = jobRepository.count();
+        long pendingJobs = jobRepository.countByStatus(JobStatus.PENDING);
+        long approvedJobs = jobRepository.countByStatus(JobStatus.APPROVED);
 
+        // ===== PUT =====
+        report.put("totalUsers", totalUsers);
+        report.put("totalEmployers", totalEmployers);
+
+        report.put("totalCompanies", totalCompanies);
+        report.put("pendingCompanies", pendingCompanies);
+
+        report.put("totalJobs", totalJobs);
+        report.put("pendingJobs", pendingJobs);
+        report.put("approvedJobs", approvedJobs);
+        
         return report;
     }
 }

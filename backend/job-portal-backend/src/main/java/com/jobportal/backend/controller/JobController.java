@@ -4,18 +4,23 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.jobportal.backend.entity.Category;
 import com.jobportal.backend.entity.Company;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.entity.JobStatus;
 import com.jobportal.backend.entity.User;
-import com.jobportal.backend.entity.Category;
-
-import com.jobportal.backend.repository.JobRepository;
-import com.jobportal.backend.repository.CompanyRepository;
-import com.jobportal.backend.repository.UserRepository;
 import com.jobportal.backend.repository.CategoryRepository;
+import com.jobportal.backend.repository.CompanyRepository;
+import com.jobportal.backend.repository.JobRepository;
+import com.jobportal.backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/jobs")
@@ -33,33 +38,51 @@ public class JobController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // 🔥 CREATE (EMPLOYER)
+    // ================= CREATE =================
     @PostMapping
     public Job createJob(@RequestBody Job job) {
 
-        // 1. Lấy user từ token
+        // ===== DEBUG =====
+        System.out.println("Incoming job: " + job);
+
+        // ===== VALIDATE INPUT =====
+        if (job.getCompany() == null || job.getCompany().getId() == null) {
+            throw new RuntimeException("Company ID is required");
+        }
+
+        if (job.getCategory() == null || job.getCategory().getId() == null) {
+            throw new RuntimeException("Category ID is required");
+        }
+
+        // ===== GET USER =====
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getName();
 
+        System.out.println("User email: " + email);
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Check company
+        // ===== GET COMPANY =====
         Company company = companyRepository.findById(job.getCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // 3. Check quyền
+        // ===== FIX AN TOÀN (KHÔNG PHÁ CODE BẠN 1) =====
+        if (company.getEmployer() == null) {
+            throw new RuntimeException("Company has no owner (user_id is null in DB)");
+        }
+
         if (!company.getEmployer().getId().equals(user.getId())) {
             throw new RuntimeException("You are not owner of this company");
         }
 
-        // 4. Check category
+        // ===== GET CATEGORY =====
         Category category = categoryRepository.findById(job.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        // 5. Set data
+        // ===== SET DATA =====
         job.setCompany(company);
         job.setCategory(category);
         job.setStatus(JobStatus.PENDING);
@@ -67,63 +90,20 @@ public class JobController {
         return jobRepository.save(job);
     }
 
-    // 🔥 GET ALL (chỉ lấy APPROVED)
+    // ================= GET ALL =================
     @GetMapping
     public List<Job> getAllJobs() {
         return jobRepository.findByStatus(JobStatus.APPROVED);
     }
 
-    // 🔥 GET BY ID
+    // ================= GET BY ID =================
     @GetMapping("/{id}")
     public Job getJobById(@PathVariable Long id) {
         return jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
-    // 🔥 UPDATE (EMPLOYER)
-    @PutMapping("/{id}")
-    public Job updateJob(@PathVariable Long id, @RequestBody Job updatedJob) {
-
-        // 1. Lấy job
-        Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        // 2. Lấy user
-        String email = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // 3. Check company
-        Company company = companyRepository.findById(updatedJob.getCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
-
-        // 4. Check quyền
-        if (!company.getEmployer().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not owner of this company");
-        }
-
-        // 5. Check category
-        Category category = categoryRepository.findById(updatedJob.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-
-        // 6. Update field
-        job.setTitle(updatedJob.getTitle());
-        job.setDescription(updatedJob.getDescription());
-        job.setSalary(updatedJob.getSalary());
-        job.setCompany(company);
-        job.setCategory(category);
-
-        // 🔥 reset trạng thái
-        job.setStatus(JobStatus.PENDING);
-
-        return jobRepository.save(job);
-    }
-
-    // 🔥 DELETE (EMPLOYER)
+    // ================= DELETE =================
     @DeleteMapping("/{id}")
     public String deleteJob(@PathVariable Long id) {
 
