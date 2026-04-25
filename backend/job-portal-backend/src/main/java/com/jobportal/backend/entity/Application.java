@@ -2,6 +2,8 @@ package com.jobportal.backend.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Application {
 
     @Id
@@ -27,6 +30,9 @@ public class Application {
     @JoinColumn(name = "job_id")
     private Job job;
 
+    @ManyToOne
+    @JoinColumn(name = "cv_id")
+    private CV cv;
 
     private Long userId;   // link tới User
 
@@ -65,4 +71,9 @@ public class Application {
     public void setUserId(Long userId) { this.userId = userId; }
 
     public LocalDateTime getAppliedAt() { return appliedAt; }
+
+    public void setAppliedAt(LocalDateTime appliedAt) {this.appliedAt = appliedAt;}
+
+    public CV getCv() { return cv; } 
+    public void setCv(CV cv) { this.cv = cv; }
 }

@@ -22,6 +22,20 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "jobs")
+
+@JsonIgnoreProperties({
+        "description",
+        "salaryMin",
+        "salaryMax",
+        "status",
+        "jobType",
+        "createdAt",
+        "expiredAt",
+        "company",
+        "category",
+        "hibernateLazyInitializer",
+        "handler"
+})
 public class Job {
 
     @Id
@@ -50,14 +64,12 @@ public class Job {
 
     private LocalDateTime expiredAt;
 
-    // ===== FIX Ở ĐÂY =====
+    // ===== RELATION =====
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id")
     private Company company;

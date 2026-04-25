@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +17,16 @@ import lombok.Data;
 
 @Data
 @Entity
+
+@JsonIgnoreProperties({
+        "fileName",
+        "contentType",
+        "fileSize",
+        "createdAt",
+        "user",
+        "hibernateLazyInitializer",
+        "handler"
+})
 public class CV {
 
     @Id

@@ -2,66 +2,74 @@ package com.jobportal.backend.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.jobportal.backend.dto.ApplyJobRequest;
 import com.jobportal.backend.entity.Application;
-import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.ApplicationRepository;
 import com.jobportal.backend.repository.JobRepository;
+import com.jobportal.backend.service.ApplicationService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/applications")
+@RequestMapping("/api/applications")
+@RequiredArgsConstructor
 public class ApplicationController {
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private final ApplicationRepository applicationRepository;
+    private final JobRepository jobRepository;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private JobRepository jobRepository;
-
-    // APPLY JOB
-    @PostMapping("/{jobId}")
-    public Application apply(@PathVariable Long jobId, @RequestBody Application app) {
-
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        app.setJob(job);
-        app.setStatus("PENDING"); // mặc định
-
-        return applicationRepository.save(app);
+    // ==============================
+    // APPLY JOB (NEW - chuẩn)
+    // ==============================
+    @PostMapping
+    public String applyJob(
+            @RequestParam Long userId,
+            @RequestBody ApplyJobRequest request
+    ) {
+        applicationService.applyJob(userId, request);
+        return "Apply thành công";
     }
 
-    // XEM ỨNG VIÊN THEO JOB
+    // ==============================
+    // XEM LIST APPLY (candidate)
+    // ==============================
+    @GetMapping("/my")
+    public List<Application> getMyApplications(@RequestParam Long userId) {
+        return applicationService.getMyApplications(userId);
+    }
+
+    // ==============================
+    // EMPLOYER - XEM ỨNG VIÊN
+    // ==============================
     @GetMapping("/job/{jobId}")
     public List<Application> getByJob(@PathVariable Long jobId) {
         return applicationRepository.findByJobId(jobId);
     }
 
-    // SEARCH / FILTER CV
+    // ==============================
+    // SEARCH CV
+    // ==============================
     @GetMapping("/job/{jobId}/search")
     public List<Application> search(@PathVariable Long jobId,
-                                    @RequestParam String email) {
+                                   @RequestParam String email) {
 
         return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
     }
 
-    // UPDATE APPLICATION
-    @PutMapping("/{id}")
-    public Application updateApplication(@PathVariable Long id,
-                                         @RequestBody Application updated) {
-
-        Application app = applicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
-
-        app.setCvUrl(updated.getCvUrl());
-        app.setEmail(updated.getEmail());
-
-        return applicationRepository.save(app);
-    }
-
-    // CONTACT ỨNG VIÊN (ĐÚNG CHUẨN)
+    // ==============================
+    // CONTACT ỨNG VIÊN
+    // ==============================
     @PutMapping("/{id}/contact")
     public Application contact(@PathVariable Long id,
                                @RequestBody Application updated) {
@@ -75,7 +83,9 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
+    // ==============================
     // UPDATE STATUS
+    // ==============================
     @PutMapping("/{id}/status")
     public Application updateStatus(@PathVariable Long id,
                                    @RequestParam String status) {
@@ -88,7 +98,9 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // DELETE APPLICATION
+    // ==============================
+    // DELETE
+    // ==============================
     @DeleteMapping("/{id}")
     public String deleteApplication(@PathVariable Long id) {
 
