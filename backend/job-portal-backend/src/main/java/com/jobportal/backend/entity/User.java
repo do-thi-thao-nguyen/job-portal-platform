@@ -24,7 +24,7 @@ public class User {
 
     private String email;
 
-    private String role;
+    private String role; // USER / ADMIN
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -35,9 +35,17 @@ public class User {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+
+        if (this.role == null) {
+            this.role = "USER";
+        }
+    }
+    
+    public String getRoleWithPrefix() {
+        return "ROLE_" + this.role;
     }
 
-    // getter setter
+    // ===== getter setter =====
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }

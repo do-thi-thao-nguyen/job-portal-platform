@@ -27,32 +27,39 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
 
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(AbstractHttpConfigurer::disable)
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .cors(AbstractHttpConfigurer::disable)
 
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
+        .formLogin(form -> form.disable())
+        .httpBasic(basic -> basic.disable())
 
-            .authorizeHttpRequests(auth -> auth
+        .authorizeHttpRequests(auth -> auth
 
-                // PUBLIC
-                .requestMatchers("/auth/**").permitAll()
+            // PUBLIC
+            .requestMatchers("/auth/**").permitAll()
 
-                // TEST: cho phép hết để debug
-                .anyRequest().permitAll()
-            )
+            // CHO TEST TẠM (có thể giữ)
+            .requestMatchers("/api/cv/**").permitAll()
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+            // USER phải login
+            .requestMatchers("/api/applications/**").authenticated()
 
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+            // ADMIN phải login + role
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-        return http.build();
-    }
+            // Còn lại
+            .anyRequest().authenticated()
+        )
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
 }
