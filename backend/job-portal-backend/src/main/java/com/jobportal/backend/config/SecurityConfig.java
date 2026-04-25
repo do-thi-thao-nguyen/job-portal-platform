@@ -40,10 +40,10 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🔥 PUBLIC
+                // PUBLIC
                 .requestMatchers("/auth/**").permitAll()
 
-                // 🔥 TEST: cho phép hết để debug
+                // TEST: cho phép hết để debug
                 .anyRequest().permitAll()
             )
 

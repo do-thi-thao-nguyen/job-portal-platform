@@ -26,7 +26,7 @@ public class CV {
     private String contentType;
     private Long fileSize;
 
-    private String title; // thay cho versionName
+    private String title;
 
     private Boolean isDefault = false;
 

@@ -1,11 +1,14 @@
 package com.jobportal.backend.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity
 public class Application {
@@ -14,19 +17,33 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email; // ứng viên
-
+    // ===== GIỮ NGUYÊN =====
+    private String email;
     private String cvUrl;
-
     private String status;
-
-    private String message; 
+    private String message;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;
 
-    // Getter Setter
+
+    private Long userId;   // link tới User
+
+    private LocalDateTime appliedAt;
+
+    // ===== AUTO TIME =====
+    @PrePersist
+    public void prePersist() {
+        this.appliedAt = LocalDateTime.now();
+
+        if (this.status == null) {
+            this.status = "PENDING";
+        }
+    }
+
+    // ===== getter setter =====
+
     public Long getId() { return id; }
 
     public String getEmail() { return email; }
@@ -41,6 +58,11 @@ public class Application {
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }
 
-    public String getMessage() {return message;}
-    public void setMessage(String message) {this.message = message;}
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public LocalDateTime getAppliedAt() { return appliedAt; }
 }
