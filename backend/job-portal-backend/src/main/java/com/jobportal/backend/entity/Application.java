@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,11 +22,13 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ===== GIỮ NGUYÊN =====
     private String email;
     private String cvUrl;
-    private String status;
     private String message;
+
+    // FIX ENUM CHUẨN
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
@@ -34,7 +38,7 @@ public class Application {
     @JoinColumn(name = "cv_id")
     private CV cv;
 
-    private Long userId;   // link tới User
+    private Long userId;
 
     private LocalDateTime appliedAt;
 
@@ -44,11 +48,11 @@ public class Application {
         this.appliedAt = LocalDateTime.now();
 
         if (this.status == null) {
-            this.status = "PENDING";
+            this.status = ApplicationStatus.PENDING; 
         }
     }
 
-    // ===== getter setter =====
+    // ===== GETTER SETTER CHUẨN =====
 
     public Long getId() { return id; }
 
@@ -58,8 +62,9 @@ public class Application {
     public String getCvUrl() { return cvUrl; }
     public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    // FIX ENUM
+    public ApplicationStatus getStatus() { return status; }
+    public void setStatus(ApplicationStatus status) { this.status = status; }
 
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }
@@ -71,9 +76,8 @@ public class Application {
     public void setUserId(Long userId) { this.userId = userId; }
 
     public LocalDateTime getAppliedAt() { return appliedAt; }
+    public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
 
-    public void setAppliedAt(LocalDateTime appliedAt) {this.appliedAt = appliedAt;}
-
-    public CV getCv() { return cv; } 
+    public CV getCv() { return cv; }
     public void setCv(CV cv) { this.cv = cv; }
 }

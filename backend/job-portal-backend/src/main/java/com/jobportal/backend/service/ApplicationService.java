@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.jobportal.backend.dto.ApplyJobRequest;
 import com.jobportal.backend.entity.Application;
+import com.jobportal.backend.entity.ApplicationStatus;
 import com.jobportal.backend.entity.CV;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.entity.User;
@@ -26,53 +27,103 @@ public class ApplicationService {
     private final CVRepository cvRepository;
     private final UserRepository userRepository;
 
+    // ==============================
     // APPLY JOB
+    // ==============================
     public void applyJob(Long userId, ApplyJobRequest request) {
 
-        // 1. check user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. check job
         Job job = jobRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // 3. check CV
         CV cv = cvRepository.findById(request.getCvId())
                 .orElseThrow(() -> new RuntimeException("CV not found"));
 
-        // 4. check CV thuộc user
         if (!cv.getUser().getId().equals(userId)) {
             throw new RuntimeException("CV không thuộc user");
         }
 
-        // 5. check apply trùng
         if (applicationRepository.existsByUserIdAndJobId(userId, request.getJobId())) {
             throw new RuntimeException("Bạn đã apply job này rồi");
         }
 
-        // 6. tạo application
         Application app = new Application();
 
-        // ===== version safe =====
         app.setEmail(user.getEmail());
         app.setUserId(user.getId());
-
         app.setJob(job);
-
-        // dùng cả 2 (safe + nâng cấp)
         app.setCv(cv);
         app.setCvUrl(cv.getFileUrl());
-
         app.setMessage(request.getNote());
-        app.setStatus("PENDING");
+
+        app.setStatus(ApplicationStatus.PENDING);
         app.setAppliedAt(LocalDateTime.now());
 
         applicationRepository.save(app);
     }
 
-    // LẤY DANH SÁCH APPLY
+    // ==============================
+    // GET MY APPLICATIONS
+    // ==============================
     public List<Application> getMyApplications(Long userId) {
         return applicationRepository.findByUserId(userId);
+    }
+
+    // ==============================
+    // EMPLOYER - SEARCH
+    // ==============================
+    public List<Application> search(Long jobId, String email) {
+        return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
+    }
+
+    // ==============================
+    // EMPLOYER - GET BY JOB
+    // ==============================
+    public List<Application> getByJob(Long jobId) {
+        return applicationRepository.findByJobId(jobId);
+    }
+
+    // ==============================
+    // UPDATE STATUS (QUAN TRỌNG)
+    // ==============================
+    public void updateStatus(Long id, String status) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        try {
+            ApplicationStatus newStatus = ApplicationStatus.valueOf(status);
+            app.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Status không hợp lệ");
+        }
+
+        applicationRepository.save(app);
+    }
+
+    // ==============================
+    // CONTACT ỨNG VIÊN
+    // ==============================
+    public void contact(Long id, String message) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        app.setStatus(ApplicationStatus.CONTACTED);
+        app.setMessage(message);
+
+        applicationRepository.save(app);
+    }
+
+    // ==============================
+    // DELETE
+    // ==============================
+    public void delete(Long id) {
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        applicationRepository.delete(app);
     }
 }
