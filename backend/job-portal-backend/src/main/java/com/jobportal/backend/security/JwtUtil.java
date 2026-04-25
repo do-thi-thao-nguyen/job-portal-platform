@@ -1,33 +1,36 @@
 package com.jobportal.backend.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
 public class JwtUtil {
 
-    private static final String SECRET = "mysecretkeymysecretkeymysecretkey123456";
-    private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private static final String SECRET = "your_super_secret_key_12345678901234567890";
+    private static final long EXPIRATION = 1000 * 60 * 60;
 
-    public static String generateToken(String email, String role) {
+    private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
+    public static String generateToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 ngày
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .signWith(KEY)
                 .compact();
     }
 
-    public static Claims validateToken(String token) {
+    public static String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(KEY)
                     .build()
                     .parseClaimsJws(token)
-                    .getBody();
+                    .getBody()
+                    .getSubject();
         } catch (Exception e) {
             return null;
         }

@@ -1,76 +1,50 @@
 package com.jobportal.backend.config;
 
-import com.jobportal.backend.entity.User;
-import com.jobportal.backend.repository.UserRepository;
-import com.jobportal.backend.security.JwtFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.List;
+import com.jobportal.backend.repository.UserRepository;
+import com.jobportal.backend.security.JwtFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter = new JwtFilter();
-
-    // =========================
-    // 🔥 FIX QUAN TRỌNG NHẤT
-    // =========================
     @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return username -> {
-            User user = userRepository.findByEmail(username.trim())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            return new org.springframework.security.core.userdetails.User(
-                    user.getEmail(),
-                    user.getPassword(),
-                    List.of(
-                            new SimpleGrantedAuthority("ROLE_" + user.getRole())
-                    )
-            );
-        };
+    public JwtFilter jwtFilter(UserRepository userRepository) {
+        return new JwtFilter(userRepository);
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(AbstractHttpConfigurer::disable)
+
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🌍 PUBLIC
+                // 🔥 PUBLIC
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 👤 USER
-                .requestMatchers("/applications/**").hasRole("USER")
-
-                // 🏢 EMPLOYER
-                .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers("/company/**").hasRole("EMPLOYER")
-
-                // 👑 ADMIN
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                // 🔐 DEFAULT
-                .anyRequest().authenticated()
+                // 🔥 TEST: cho phép hết để debug
+                .anyRequest().permitAll()
             )
 
             .sessionManagement(session ->

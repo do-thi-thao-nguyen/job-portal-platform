@@ -1,75 +1,67 @@
 package com.jobportal.backend.security;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.jobportal.backend.entity.User;
+import com.jobportal.backend.repository.UserRepository;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import io.jsonwebtoken.Claims;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-
 public class JwtFilter extends OncePerRequestFilter {
+
+    private final UserRepository userRepository;
+
+    public JwtFilter(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    // 🔥 QUAN TRỌNG: bỏ qua /auth
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/auth");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                   HttpServletResponse response,
-                                   FilterChain filterChain)
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
-
-        String path = request.getServletPath();
-
-        // ✅ chỉ bỏ qua login/register
-        if (path.startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+        if (header != null && header.startsWith("Bearer ")) {
+
+            String token = header.substring(7);
+            String email = JwtUtil.validateToken(token);
+
+            if (email != null) {
+
+                User user = userRepository.findByEmail(email)
+                        .orElse(null);
+
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    user.getEmail(),
+                                    null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                            );
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            }
         }
-
-        String token = header.substring(7);
-
-        Claims claims = JwtUtil.validateToken(token);
-
-        if (claims == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String email = claims.getSubject();
-        String role = claims.get("role", String.class);
-
-        // 🔥 FIX ROLE chuẩn
-        if (role != null && role.startsWith("ROLE_")) {
-            role = role.substring(5);
-        }
-
-        List<SimpleGrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + role)
-        );
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        null,
-                        authorities
-                );
-
-        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }
-}   
+}
