@@ -34,10 +34,9 @@ public class JobController {
     private CategoryRepository categoryRepository;
 
     // 🔥 CREATE (EMPLOYER)
-    @PostMapping
-    public Job createJob(@RequestBody Job job) {
+   @PostMapping
+        public Job createJob(@RequestBody Job job) {
 
-        // 1. Lấy user từ token
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -46,32 +45,21 @@ public class JobController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 2. Check company
-        Company company = companyRepository.findById(job.getCompany().getId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        // ✅ check ownership
+        Company company = companyRepository
+                .findByEmployer_Id(user.getId())
+                .orElseThrow(() -> new RuntimeException("You must create company first"));
 
-        // 3. Check quyền
-        if (!company.getEmployer().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not owner of this company");
-        }
-
-        // 4. Check category
+        // ✅ check data
         Category category = categoryRepository.findById(job.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        // 5. Set data
         job.setCompany(company);
         job.setCategory(category);
         job.setStatus(JobStatus.PENDING);
 
         return jobRepository.save(job);
-    }
-
-    // 🔥 GET ALL (chỉ lấy APPROVED)
-    @GetMapping
-    public List<Job> getAllJobs() {
-        return jobRepository.findByStatus(JobStatus.APPROVED);
-    }
+        }
 
     // 🔥 GET BY ID
     @GetMapping("/{id}")
@@ -134,4 +122,17 @@ public class JobController {
 
         return "Deleted job with id " + id;
     }
+    @GetMapping("/my")
+    public List<Job> getMyJobs() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return jobRepository.findByCompanyEmployer(user);
+        }
 }

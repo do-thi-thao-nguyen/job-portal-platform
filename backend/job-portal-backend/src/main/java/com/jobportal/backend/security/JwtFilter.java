@@ -23,16 +23,9 @@ public class JwtFilter extends OncePerRequestFilter {
                                    FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getServletPath();
-
-        // ✅ chỉ bỏ qua login/register
-        if (path.startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String header = request.getHeader("Authorization");
 
+        // 🔥 Nếu không có token → bỏ qua
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -42,6 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         Claims claims = JwtUtil.validateToken(token);
 
+        // 🔥 Token invalid
         if (claims == null) {
             filterChain.doFilter(request, response);
             return;
@@ -50,13 +44,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = claims.getSubject();
         String role = claims.get("role", String.class);
 
-        // 🔥 FIX ROLE chuẩn
-        if (role != null && role.startsWith("ROLE_")) {
-            role = role.substring(5);
+        // 🔥 Nếu không có role → bỏ qua (tránh ROLE_null)
+        if (role == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // 🔥 đảm bảo luôn có ROLE_
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
         }
 
         List<SimpleGrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + role)
+                new SimpleGrantedAuthority(role)
         );
 
         UsernamePasswordAuthenticationToken auth =
@@ -72,4 +72,4 @@ public class JwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-}   
+}

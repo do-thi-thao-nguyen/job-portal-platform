@@ -34,4 +34,41 @@ public class CompanyController {
 
         return companyRepository.save(company);
     }
+    @GetMapping("/my")
+    public Company getMyCompany() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return companyRepository
+                .findByEmployer_Id(user.getId())
+                .orElse(null);
+    }
+    @PutMapping("/my")
+    public Company updateMyCompany(@RequestBody Company updatedCompany) {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Company company = companyRepository
+                .findByEmployer_Id(user.getId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        // update fields
+        company.setName(updatedCompany.getName());
+        company.setDescription(updatedCompany.getDescription());
+        company.setAddress(updatedCompany.getAddress());
+
+        return companyRepository.save(company);
+    }
 }

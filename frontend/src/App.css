@@ -1,38 +1,220 @@
-.App {
-  text-align: center;
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+html, body, #root {
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* ================= GLOBAL BACKGROUND ================= */
+body {
+  background: linear-gradient(135deg, #1d2671, #c33764);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* ================= WELCOME PAGE ================= */
+.welcome-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+
+  min-height: 100vh;
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 16px;
+
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* ================= TEXT ================= */
+h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+p {
+  opacity: 0.8;
+  margin-bottom: 30px;
+}
+
+/* ================= BUTTON ================= */
+.btn {
+  padding: 12px 24px;
+  margin: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background: #00c6ff;
+  color: black;
+}
+
+.btn-primary:hover {
+  background: #0072ff;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* ================= DASHBOARD ================= */
+.dashboard {
+  display: flex;
+  min-height: 100vh;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* SIDEBAR */
+.sidebar {
+  width: 250px;
+  background: #1e293b;
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar p {
+  margin: 10px 0;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.sidebar p:hover {
+  opacity: 1;
+}
+
+/* CONTENT */
+
+.content {
+  flex: 1;
+  padding: 40px;
+  background: #f1f5f9;
+  min-height: 100vh;
+}
+
+/* ================= FORM ================= */
+.form-card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  width: 400px;
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.form-card button {
+  padding: 10px;
+  background: #00c6ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.form-card button:hover {
+  background: #0072ff;
+  color: white;
+}
+
+.company-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 400px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ===== COMPANY ===== */
+
+.company-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 400px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.company-card h2 {
+  margin-bottom: 10px;
+}
+
+.company-card p {
+  margin: 5px 0;
+}
+
+/* ===== FORM ===== */
+
+.form-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.form-card input,
+.form-card textarea,
+.form-card select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.form-card button {
+  padding: 10px 15px;
+  background: #00bcd4;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+}
+
+.form-card button:hover {
+  background: #0097a7;
+}
+
+.company-card button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #ffc107;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.company-card button:hover {
+  background: #e0a800;
+}
+
+.app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.app-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }

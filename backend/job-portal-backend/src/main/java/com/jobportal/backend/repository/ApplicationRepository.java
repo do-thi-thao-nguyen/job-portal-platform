@@ -8,6 +8,6 @@ import com.jobportal.backend.entity.Application;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
-    List<Application> findByJobId(Long jobId);
-    List<Application> findByJobIdAndEmailContaining(Long jobId, String email);
+    List<Application> findByJob_Id(Long jobId);
+    List<Application> findByJob_IdAndEmailContaining(Long jobId, String email);
 }

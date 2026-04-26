@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import java.util.List;
 
@@ -52,27 +54,34 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🌍 PUBLIC
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            // 🌍 PUBLIC
+            .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/auth/**").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers("/categories/**").permitAll()
 
-                // 👤 USER
-                .requestMatchers("/applications/**").hasRole("USER")
+            // 👤 USER
+            .requestMatchers("/applications/**").hasAnyRole("USER", "EMPLOYER")
 
-                // 🏢 EMPLOYER
-                .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers("/company/**").hasRole("EMPLOYER")
+            // 🏢 EMPLOYER
+            .requestMatchers("/jobs/my").hasRole("EMPLOYER")
+            .requestMatchers("/company/my").hasRole("EMPLOYER")
 
-                // 👑 ADMIN
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
+            .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
+            .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
 
-                // 🔐 DEFAULT
-                .anyRequest().authenticated()
-            )
+            .requestMatchers("/company/**").hasRole("EMPLOYER")
 
+            // 👑 ADMIN
+            .requestMatchers("/admin/**").hasRole("ADMIN")
+
+            // 🌍 PUBLIC JOB VIEW (đặt SAU)
+            .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
+
+            // 🔐 DEFAULT
+            .anyRequest().authenticated()
+        )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
@@ -80,5 +89,18 @@ public class SecurityConfig {
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+     @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
+            }
+        };
     }
 }

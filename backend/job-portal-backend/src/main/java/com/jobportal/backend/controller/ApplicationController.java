@@ -20,7 +20,7 @@ public class ApplicationController {
     @Autowired
     private JobRepository jobRepository;
 
-    // APPLY JOB
+    // 🔥 APPLY JOB
     @PostMapping("/{jobId}")
     public Application apply(@PathVariable Long jobId, @RequestBody Application app) {
 
@@ -28,26 +28,29 @@ public class ApplicationController {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         app.setJob(job);
-        app.setStatus("PENDING"); // mặc định
+        app.setStatus("PENDING");
 
         return applicationRepository.save(app);
     }
 
-    // XEM ỨNG VIÊN THEO JOB
+    // 🔥 XEM ỨNG VIÊN THEO JOB (FIX CHUẨN)
     @GetMapping("/job/{jobId}")
     public List<Application> getByJob(@PathVariable Long jobId) {
-        return applicationRepository.findByJobId(jobId);
+
+        System.out.println("GET APPLICATIONS FOR JOB: " + jobId);
+
+        return applicationRepository.findByJob_Id(jobId);
     }
 
-    // SEARCH / FILTER CV
+    // 🔥 SEARCH / FILTER (FIX CHUẨN)
     @GetMapping("/job/{jobId}/search")
     public List<Application> search(@PathVariable Long jobId,
                                     @RequestParam String email) {
 
-        return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
+        return applicationRepository.findByJob_IdAndEmailContaining(jobId, email);
     }
 
-    // UPDATE APPLICATION
+    // 🔥 UPDATE APPLICATION
     @PutMapping("/{id}")
     public Application updateApplication(@PathVariable Long id,
                                          @RequestBody Application updated) {
@@ -61,7 +64,7 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // CONTACT ỨNG VIÊN (ĐÚNG CHUẨN)
+    // 🔥 CONTACT ỨNG VIÊN
     @PutMapping("/{id}/contact")
     public Application contact(@PathVariable Long id,
                                @RequestBody Application updated) {
@@ -75,7 +78,7 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // UPDATE STATUS
+    // 🔥 UPDATE STATUS
     @PutMapping("/{id}/status")
     public Application updateStatus(@PathVariable Long id,
                                    @RequestParam String status) {
@@ -88,7 +91,7 @@ public class ApplicationController {
         return applicationRepository.save(app);
     }
 
-    // DELETE APPLICATION
+    // 🔥 DELETE
     @DeleteMapping("/{id}")
     public String deleteApplication(@PathVariable Long id) {
 
