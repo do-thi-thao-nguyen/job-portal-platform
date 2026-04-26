@@ -1,12 +1,21 @@
 package com.jobportal.backend.entity;
 
 import java.time.LocalDateTime;
-import jakarta.persistence.*;
-import lombok.Data;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "users")
-@Data
 public class User {
 
     @Id
@@ -14,18 +23,37 @@ public class User {
     private Long id;
 
     private String email;
-    private String password;
+
+    private String role; // USER / ADMIN
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Transient
-    private String companyName;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     @PrePersist
     public void prePersist() {
-    this.createdAt = LocalDateTime.now();
-}
-}
+        this.createdAt = LocalDateTime.now();
 
+        if (this.role == null) {
+            this.role = "USER";
+        }
+    }
+    
+    public String getRoleWithPrefix() {
+        return "ROLE_" + this.role;
+    }
+
+    // ===== getter setter =====
+    public Long getId() { return id; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public String getRole() { return role; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public void setId(Long id) { this.id = id; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public void setRole(String role) { this.role = role; }
+}

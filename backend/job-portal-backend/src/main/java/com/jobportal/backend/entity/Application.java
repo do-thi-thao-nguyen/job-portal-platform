@@ -1,32 +1,59 @@
 package com.jobportal.backend.entity;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Application {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String email; // ứng viên
-
+    private String email;
     private String cvUrl;
+    private String message;
 
-    private String status;
-
-    private String message; 
+    // FIX ENUM CHUẨN
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
     private Job job;
 
-    // Getter Setter
+    @ManyToOne
+    @JoinColumn(name = "cv_id")
+    private CV cv;
+
+    private Long userId;
+
+    private LocalDateTime appliedAt;
+
+    // ===== AUTO TIME =====
+    @PrePersist
+    public void prePersist() {
+        this.appliedAt = LocalDateTime.now();
+
+        if (this.status == null) {
+            this.status = ApplicationStatus.PENDING; 
+        }
+    }
+
+    // ===== GETTER SETTER CHUẨN =====
+
     public Long getId() { return id; }
 
     public String getEmail() { return email; }
@@ -35,12 +62,22 @@ public class Application {
     public String getCvUrl() { return cvUrl; }
     public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    // FIX ENUM
+    public ApplicationStatus getStatus() { return status; }
+    public void setStatus(ApplicationStatus status) { this.status = status; }
 
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }
 
-    public String getMessage() {return message;}
-    public void setMessage(String message) {this.message = message;}
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public LocalDateTime getAppliedAt() { return appliedAt; }
+    public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
+
+    public CV getCv() { return cv; }
+    public void setCv(CV cv) { this.cv = cv; }
 }

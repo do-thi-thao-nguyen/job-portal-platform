@@ -1,14 +1,18 @@
 package com.jobportal.backend.controller;
 
-import com.jobportal.backend.entity.Role;
-import com.jobportal.backend.entity.User;
-import com.jobportal.backend.entity.Company;
-import com.jobportal.backend.repository.UserRepository;
-import com.jobportal.backend.repository.CompanyRepository;
-import com.jobportal.backend.security.JwtUtil;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.jobportal.backend.entity.User;
+import com.jobportal.backend.repository.UserRepository;
+import com.jobportal.backend.security.JwtUtil;
 
 @RestController
 @RequestMapping("/auth")
@@ -18,68 +22,68 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private CompanyRepository companyRepository;
+    private PasswordEncoder passwordEncoder;
 
-    // =========================
-    // REGISTER (AUTO USER / EMPLOYER)
-    // =========================
+    // ================= REGISTER =================
     @PostMapping("/register")
-    public User register(@RequestBody User user,
-                        @RequestParam(required = false) String companyName) {
+    public Object register(@RequestBody User user) {
 
-        System.out.println("EMAIL: " + user.getEmail());
-        System.out.println("PASS: " + user.getPassword());
-        System.out.println("COMPANY: " + companyName);
-
-        if (user.getEmail() == null || user.getPassword() == null) {
-            throw new RuntimeException("Email & password required");
+        // check email
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            return Map.of("error", "Email is required");
         }
 
-        // check trùng email
+        // check password
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            return Map.of("error", "Password is required");
+        }
+
+        // check email tồn tại
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            return Map.of("error", "Email already exists");
         }
 
-        // 🔥 EMPLOYER
-        if (companyName != null && !companyName.isBlank()) {
+        // encode password
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-            user.setRole(Role.EMPLOYER);
-            userRepository.save(user);
+        // set role
+        user.setRole("USER");
 
-            Company company = new Company();
-            company.setName(companyName);
-            company.setEmployer(user);
+        User savedUser = userRepository.save(user);
 
-            companyRepository.save(company);
-
-        } else {
-            // 🔥 USER
-            user.setRole(Role.USER);
-            userRepository.save(user);
-        }
-
-        return user;
-    }
-        // =========================
-    // LOGIN
-    // =========================
-    @PostMapping("/login")
-    public String login(@RequestBody User user) {
-
-        User existingUser = userRepository.findByEmail(user.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (existingUser.getPassword() == null) {
-            throw new RuntimeException("User has no password");
-        }
-
-        if (!existingUser.getPassword().equals(user.getPassword())) {
-            throw new RuntimeException("Wrong password");
-        }
-
-        return JwtUtil.generateToken(
-                existingUser.getEmail(),
-                existingUser.getRole().name()
+        return Map.of(
+                "id", savedUser.getId(),
+                "email", savedUser.getEmail(),
+                "role", savedUser.getRole()
         );
     }
+
+    // ================= LOGIN =================
+    @PostMapping("/login")
+    public Object login(@RequestBody User user) {
+
+        User existingUser = userRepository.findByEmail(user.getEmail())
+                .orElse(null);
+
+        if (existingUser == null) {
+            return Map.of("error", "User not found");
+        }
+
+        if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+            return Map.of("error", "Wrong password");
+        }
+
+        //JWT TOKEN
+        String token = JwtUtil.generateToken(existingUser.getEmail());
+
+        return Map.of(
+                "token", token,
+                "email", existingUser.getEmail(),
+                "role", existingUser.getRole()
+        );
+    }
+    @GetMapping("/test/encode")
+    public String encode() {
+        return passwordEncoder.encode("123456");
+}
 }

@@ -1,20 +1,19 @@
 package com.jobportal.backend.controller;
 
-import com.jobportal.backend.entity.JobStatus;
-import com.jobportal.backend.entity.Role;
-import com.jobportal.backend.repository.CompanyRepository;
-import com.jobportal.backend.repository.JobRepository;
-import com.jobportal.backend.repository.UserRepository;
-import com.jobportal.backend.entity.CompanyStatus;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import com.jobportal.backend.entity.CompanyStatus;
+import com.jobportal.backend.entity.JobStatus;
+import com.jobportal.backend.repository.CompanyRepository;
+import com.jobportal.backend.repository.JobRepository;
+import com.jobportal.backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/admin/reports")
@@ -35,36 +34,30 @@ public class AdminReportController {
 
         Map<String, Object> report = new HashMap<>();
 
-        // USER
-        report.put("totalUsers", userRepository.count());
-        report.put("totalEmployers", userRepository.countByRole(Role.EMPLOYER));
+        // ===== USER =====
+        long totalUsers = userRepository.count();
+        long totalEmployers = userRepository.countByRole("EMPLOYER");
 
-        // COMPANY
-        report.put("totalCompanies", companyRepository.count());
-        report.put("pendingCompanies", companyRepository.countByStatus(CompanyStatus.PENDING));
+        // ===== COMPANY =====
+        long totalCompanies = companyRepository.count();
+        long pendingCompanies = companyRepository.countByStatus(CompanyStatus.PENDING);
 
-        // JOB
-        report.put("totalJobs", jobRepository.count());
-        report.put("pendingJobs", jobRepository.countByStatus(JobStatus.PENDING));
-        report.put("approvedJobs", jobRepository.countByStatus(JobStatus.APPROVED));
+        // ===== JOB =====
+        long totalJobs = jobRepository.count();
+        long pendingJobs = jobRepository.countByStatus(JobStatus.PENDING);
+        long approvedJobs = jobRepository.countByStatus(JobStatus.APPROVED);
 
+        // ===== PUT =====
+        report.put("totalUsers", totalUsers);
+        report.put("totalEmployers", totalEmployers);
+
+        report.put("totalCompanies", totalCompanies);
+        report.put("pendingCompanies", pendingCompanies);
+
+        report.put("totalJobs", totalJobs);
+        report.put("pendingJobs", pendingJobs);
+        report.put("approvedJobs", approvedJobs);
+        
         return report;
     }
-    @GetMapping("/today")
-    public Map<String, Object> reportToday() {
-
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = LocalDate.now().atTime(23, 59, 59);
-
-        long usersToday = userRepository.countByCreatedAtBetween(start, end);
-        long jobsToday = jobRepository.countByCreatedAtBetween(start, end);
-        long companiesToday = companyRepository.countByCreatedAtBetween(start, end);
-
-        return Map.of(
-                "usersToday", usersToday,
-                "jobsToday", jobsToday,
-                "companiesToday", companiesToday
-        );
-    }
-        
 }
