@@ -4,11 +4,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.backend.entity.User;
 import com.jobportal.backend.repository.UserRepository;
@@ -26,28 +22,34 @@ public class AuthController {
 
     // ================= REGISTER =================
     @PostMapping("/register")
-    public Object register(@RequestBody User user) {
+    public Object register(@RequestBody Map<String, Object> request) {
 
-        // check email
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+        String email = (String) request.get("email");
+        String password = (String) request.get("password");
+        String companyName = (String) request.get("companyName"); // 👈 chỉ là string
+
+        if (email == null || email.isBlank()) {
             return Map.of("error", "Email is required");
         }
 
-        // check password
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+        if (password == null || password.isBlank()) {
             return Map.of("error", "Password is required");
         }
 
-        // check email tồn tại
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(email).isPresent()) {
             return Map.of("error", "Email already exists");
         }
 
-        // encode password
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
 
-        // set role
-        user.setRole("USER");
+        // 🔥 PHÂN ROLE
+        if (companyName != null && !companyName.isBlank()) {
+            user.setRole("EMPLOYER");
+        } else {
+            user.setRole("USER");
+        }
 
         User savedUser = userRepository.save(user);
 
@@ -73,8 +75,10 @@ public class AuthController {
             return Map.of("error", "Wrong password");
         }
 
-        //JWT TOKEN
-        String token = JwtUtil.generateToken(existingUser.getEmail());
+        String token = JwtUtil.generateToken(
+                existingUser.getEmail(),
+                existingUser.getRole()
+        );
 
         return Map.of(
                 "token", token,
@@ -82,8 +86,10 @@ public class AuthController {
                 "role", existingUser.getRole()
         );
     }
+
+    // ================= TEST =================
     @GetMapping("/test/encode")
     public String encode() {
         return passwordEncoder.encode("123456");
-}
+    }
 }

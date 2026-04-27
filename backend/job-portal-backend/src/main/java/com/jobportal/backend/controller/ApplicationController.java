@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.jobportal.backend.entity.Application;
+import com.jobportal.backend.entity.ApplicationStatus;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.repository.ApplicationRepository;
 import com.jobportal.backend.repository.JobRepository;
@@ -28,7 +29,7 @@ public class ApplicationController {
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
         app.setJob(job);
-        app.setStatus("PENDING");
+        app.setStatus(ApplicationStatus.PENDING);
 
         return applicationRepository.save(app);
     }
@@ -72,7 +73,7 @@ public class ApplicationController {
         Application app = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        app.setStatus("CONTACTED");
+        app.setStatus(ApplicationStatus.CONTACTED);
         app.setMessage(updated.getMessage());
 
         return applicationRepository.save(app);
@@ -86,7 +87,7 @@ public class ApplicationController {
         Application app = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
-        app.setStatus(status);
+        app.setStatus(ApplicationStatus.valueOf(status.toUpperCase()));
 
         return applicationRepository.save(app);
     }

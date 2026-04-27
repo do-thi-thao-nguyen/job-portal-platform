@@ -41,18 +41,20 @@ public class ApplicationService {
         CV cv = cvRepository.findById(request.getCvId())
                 .orElseThrow(() -> new RuntimeException("CV not found"));
 
+        // ✅ check CV thuộc user
         if (!cv.getUser().getId().equals(userId)) {
             throw new RuntimeException("CV không thuộc user");
         }
 
-        if (applicationRepository.existsByUserIdAndJobId(userId, request.getJobId())) {
+        // ✅ FIX: dùng entity relation
+        if (applicationRepository.existsByUser_IdAndJob_Id(userId, request.getJobId())) {
             throw new RuntimeException("Bạn đã apply job này rồi");
         }
 
         Application app = new Application();
 
         app.setEmail(user.getEmail());
-        app.setUserId(user.getId());
+        app.setUser(user);          // ✅ FIX QUAN TRỌNG
         app.setJob(job);
         app.setCv(cv);
         app.setCvUrl(cv.getFileUrl());
@@ -68,25 +70,25 @@ public class ApplicationService {
     // GET MY APPLICATIONS
     // ==============================
     public List<Application> getMyApplications(Long userId) {
-        return applicationRepository.findByUserId(userId);
+        return applicationRepository.findByUser_Id(userId); // ✅ FIX
     }
 
     // ==============================
     // EMPLOYER - SEARCH
     // ==============================
     public List<Application> search(Long jobId, String email) {
-        return applicationRepository.findByJobIdAndEmailContaining(jobId, email);
+        return applicationRepository.findByJob_IdAndEmailContaining(jobId, email); // ✅ FIX
     }
 
     // ==============================
     // EMPLOYER - GET BY JOB
     // ==============================
     public List<Application> getByJob(Long jobId) {
-        return applicationRepository.findByJobId(jobId);
+        return applicationRepository.findByJob_Id(jobId); // ✅ FIX
     }
 
     // ==============================
-    // UPDATE STATUS (QUAN TRỌNG)
+    // UPDATE STATUS
     // ==============================
     public void updateStatus(Long id, String status) {
 
@@ -94,7 +96,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         try {
-            ApplicationStatus newStatus = ApplicationStatus.valueOf(status);
+            ApplicationStatus newStatus = ApplicationStatus.valueOf(status.toUpperCase()); // ✅ FIX
             app.setStatus(newStatus);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Status không hợp lệ");

@@ -38,7 +38,9 @@ public class Application {
     @JoinColumn(name = "cv_id")
     private CV cv;
 
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private LocalDateTime appliedAt;
 
@@ -72,12 +74,12 @@ public class Application {
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
     public LocalDateTime getAppliedAt() { return appliedAt; }
     public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
 
     public CV getCv() { return cv; }
     public void setCv(CV cv) { this.cv = cv; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

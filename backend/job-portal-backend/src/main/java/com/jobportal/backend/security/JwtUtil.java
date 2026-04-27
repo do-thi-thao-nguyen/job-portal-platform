@@ -1,38 +1,54 @@
 package com.jobportal.backend.security;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Date;
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
+import java.security.Key;
+
 public class JwtUtil {
 
-    private static final String SECRET = "your_super_secret_key_12345678901234567890";
-    private static final long EXPIRATION = 1000 * 60 * 60;
+    private static final Key SECRET_KEY =
+            Keys.hmacShaKeyFor("12345678901234567890123456789012".getBytes());
 
-    private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
-
-    public static String generateToken(String email) {
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(KEY)
-                .compact();
-    }
-
+    // ================= VALIDATE =================
     public static String validateToken(String token) {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(KEY)
+                    .setSigningKey(SECRET_KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody()
-                    .getSubject();
+                    .getSubject(); // email
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // ================= GET ROLE =================
+    public static String getRoleFromToken(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .get("role", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // ================= GENERATE =================
+    public static String generateToken(String email, String role) {
+
+        if (role == null) {
+            throw new RuntimeException("Role không được null");
+        }
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role) // vẫn phải có claim
+                .signWith(SECRET_KEY)
+                .compact();
     }
 }

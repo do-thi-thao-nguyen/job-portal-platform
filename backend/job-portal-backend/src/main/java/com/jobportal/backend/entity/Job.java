@@ -6,17 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -24,15 +14,6 @@ import lombok.Data;
 @Table(name = "jobs")
 
 @JsonIgnoreProperties({
-        "description",
-        "salaryMin",
-        "salaryMax",
-        "status",
-        "jobType",
-        "createdAt",
-        "expiredAt",
-        "company",
-        "category",
         "hibernateLazyInitializer",
         "handler"
 })
@@ -73,4 +54,14 @@ public class Job {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id")
     private Company company;
+
+    // ===== CUSTOM METHOD =====
+
+    // 👉 Tính lương trung bình (tránh lỗi getSalary)
+    public Double getSalary() {
+        if (salaryMin != null && salaryMax != null) {
+            return (salaryMin + salaryMax) / 2;
+        }
+        return salaryMin != null ? salaryMin : salaryMax;
+    }
 }

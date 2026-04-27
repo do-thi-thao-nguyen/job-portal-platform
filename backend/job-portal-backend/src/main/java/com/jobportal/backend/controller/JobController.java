@@ -34,8 +34,8 @@ public class JobController {
     private CategoryRepository categoryRepository;
 
     // 🔥 CREATE (EMPLOYER)
-   @PostMapping
-        public Job createJob(@RequestBody Job job) {
+    @PostMapping
+    public Job createJob(@RequestBody Job job) {
 
         String email = SecurityContextHolder
                 .getContext()
@@ -45,12 +45,10 @@ public class JobController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ check ownership
         Company company = companyRepository
                 .findByEmployer_Id(user.getId())
                 .orElseThrow(() -> new RuntimeException("You must create company first"));
 
-        // ✅ check data
         Category category = categoryRepository.findById(job.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
@@ -59,7 +57,7 @@ public class JobController {
         job.setStatus(JobStatus.PENDING);
 
         return jobRepository.save(job);
-        }
+    }
 
     // 🔥 GET BY ID
     @GetMapping("/{id}")
@@ -72,11 +70,9 @@ public class JobController {
     @PutMapping("/{id}")
     public Job updateJob(@PathVariable Long id, @RequestBody Job updatedJob) {
 
-        // 1. Lấy job
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // 2. Lấy user
         String email = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -85,23 +81,24 @@ public class JobController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 3. Check company
         Company company = companyRepository.findById(updatedJob.getCompany().getId())
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // 4. Check quyền
         if (!company.getEmployer().getId().equals(user.getId())) {
             throw new RuntimeException("You are not owner of this company");
         }
 
-        // 5. Check category
         Category category = categoryRepository.findById(updatedJob.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        // 6. Update field
+        // ✅ UPDATE FIELD (FIX CHUẨN)
         job.setTitle(updatedJob.getTitle());
         job.setDescription(updatedJob.getDescription());
-        job.setSalary(updatedJob.getSalary());
+        job.setSalaryMin(updatedJob.getSalaryMin());
+        job.setSalaryMax(updatedJob.getSalaryMax());
+        job.setLocation(updatedJob.getLocation());
+        job.setJobType(updatedJob.getJobType());
+
         job.setCompany(company);
         job.setCategory(category);
 
@@ -122,6 +119,8 @@ public class JobController {
 
         return "Deleted job with id " + id;
     }
+
+    // 🔥 GET MY JOBS
     @GetMapping("/my")
     public List<Job> getMyJobs() {
 
@@ -134,5 +133,5 @@ public class JobController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return jobRepository.findByCompanyEmployer(user);
-        }
+    }
 }

@@ -1,87 +1,77 @@
-package com.jobportal.backend.config;
+    package com.jobportal.backend.config;
 
-import com.jobportal.backend.entity.User;
-import com.jobportal.backend.repository.UserRepository;
-import com.jobportal.backend.security.JwtFilter;
+    import org.springframework.context.annotation.Bean;
+    import org.springframework.context.annotation.Configuration;
+    import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+    import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+    import org.springframework.security.config.http.SessionCreationPolicy;
+    import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+    import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+    import org.springframework.security.crypto.password.PasswordEncoder;
+    import org.springframework.security.web.SecurityFilterChain;
+    import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
-import java.util.List;
+    import org.springframework.http.HttpMethod;
 
-@Configuration
-@EnableMethodSecurity
-public class SecurityConfig {
+    import com.jobportal.backend.security.JwtFilter;
 
-    private final JwtFilter jwtFilter = new JwtFilter();
+    @Configuration
+    @EnableMethodSecurity
+    public class SecurityConfig {
 
-    // =========================
-    // 🔥 FIX QUAN TRỌNG NHẤT
-    // =========================
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return username -> {
-            User user = userRepository.findByEmail(username.trim())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+        // ✅ JWT FILTER
+        @Bean
+        public JwtFilter jwtFilter() {
+            return new JwtFilter();
+        }
 
-            return new org.springframework.security.core.userdetails.User(
-                    user.getEmail(),
-                    user.getPassword(),
-                    List.of(
-                            new SimpleGrantedAuthority("ROLE_" + user.getRole())
-                    )
-            );
-        };
-    }
+        // ✅ PASSWORD ENCODER
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // ✅ SECURITY
+        @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(request -> {
+                var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                corsConfig.addAllowedOrigin("http://localhost:3000");
+                corsConfig.addAllowedHeader("*");
+                corsConfig.addAllowedMethod("*");
+                corsConfig.setAllowCredentials(true);
+                return corsConfig;
+            }))
+
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
 
             .authorizeHttpRequests(auth -> auth
 
-            // 🌍 PUBLIC
-            .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/auth/**").permitAll()
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers("/categories/**").permitAll()
+                // 🔥 QUAN TRỌNG
+                .requestMatchers("/auth/**").permitAll()
 
-            // 👤 USER
-            .requestMatchers("/applications/**").hasAnyRole("USER", "EMPLOYER")
+                .requestMatchers("/categories/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
 
-            // 🏢 EMPLOYER
-            .requestMatchers("/jobs/my").hasRole("EMPLOYER")
-            .requestMatchers("/company/my").hasRole("EMPLOYER")
+                .requestMatchers("/applications/**").hasAnyRole("USER", "EMPLOYER")
 
-            .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
-            .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
-            .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
+                .requestMatchers("/jobs/my").hasRole("EMPLOYER")
+                .requestMatchers("/company/**").hasRole("EMPLOYER")
 
-            .requestMatchers("/company/**").hasRole("EMPLOYER")
+                .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
+                .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
+                .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
 
-            // 👑 ADMIN
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
 
-            // 🌍 PUBLIC JOB VIEW (đặt SAU)
-            .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
+                .anyRequest().authenticated()
+            )
 
-            // 🔐 DEFAULT
-            .anyRequest().authenticated()
-        )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
@@ -90,17 +80,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")
-                        .allowedMethods("*")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+
 }
