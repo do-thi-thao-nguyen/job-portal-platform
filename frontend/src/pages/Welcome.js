@@ -1,44 +1,35 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-export default function Welcome() {
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    alert("Logged out");
-    navigate("/");
-  };
-
+function Welcome() {
   return (
-    <div className="welcome-container">
-      <h1>🚀 Job Portal</h1>
-      <p>Find your dream job or hire top talent</p>
+    <div style={{
+      height: "100vh",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "column",
+      background: "linear-gradient(to right, #2c3e50, #e84393)",
+      color: "white"
+    }}>
+      
+      <h1>Welcome to Job Portal 🚀</h1>
+      <p>Tìm việc hoặc đăng tuyển dễ dàng</p>
 
-      {token ? (
-        <>
-          <h3>✅ You are logged in</h3>
-          <button className="btn btn-primary" onClick={handleLogout}>
-            Logout
-          </button>
-        </>
-      ) : (
-        <>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/login")}
-          >
+      <div style={{ marginTop: "20px" }}>
+        <Link to="/login">
+          <button style={{ marginRight: "10px", padding: "10px 20px" }}>
             Login
           </button>
+        </Link>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/register")}
-          >
+        <Link to="/register">
+          <button style={{ padding: "10px 20px" }}>
             Register
           </button>
-        </>
-      )}
+        </Link>
+      </div>
     </div>
   );
 }
+
+export default Welcome;
