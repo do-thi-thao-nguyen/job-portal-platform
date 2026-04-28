@@ -55,6 +55,10 @@ public class Job {
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
+
     // ===== CUSTOM METHOD =====
 
     // 👉 Tính lương trung bình (tránh lỗi getSalary)

@@ -12,6 +12,8 @@ import CreateCompany from "./pages/Employer/CreateCompany";
 import MyCompany from "./pages/Employer/MyCompany";
 import EditCompany from "./pages/Employer/EditCompany";
 import ApplicationsPage from "./pages/Employer/ApplicationsPage";
+import PackagesPage from "./pages/Employer/PackagesPage";
+import PaymentSuccess from "./pages/Employer/PaymentSuccess";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
 
         <Route path="/employer/jobs" element={<MyJobs />} />
         <Route path="/employer/create" element={<CreateJob />} />
+        <Route path="/packages" element={<PackagesPage />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
 
         {/* 🔥 QUAN TRỌNG */}
         <Route

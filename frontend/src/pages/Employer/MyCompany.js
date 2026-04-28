@@ -9,6 +9,7 @@ export default function MyCompany() {
 
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false); 
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -25,7 +26,7 @@ export default function MyCompany() {
     fetchCompany();
   }, []);
 
-  // ⏳ Loading
+  // Loading
   if (loading) {
     return (
       <EmployerLayout>
@@ -34,34 +35,54 @@ export default function MyCompany() {
     );
   }
 
-  // ❌ Chưa có company
+  // Chưa có company
   if (!company || !company.id) {
     return (
       <EmployerLayout>
-        <h2>Bạn chưa tạo công ty</h2>
-        <button onClick={() => navigate("/employer/company/create")}>
-          ➕ Tạo công ty
-        </button>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          marginTop: "80px"
+        }}>
+          <h2>Bạn chưa tạo công ty</h2>
+
+          <button
+            onClick={() => {
+              setCreating(true);
+              setTimeout(() => {
+                navigate("/employer/company/create");
+              }, 500);
+            }}
+            disabled={creating}
+            style={{
+              marginTop: "20px",
+              padding: "12px 24px",
+              background: creating ? "#aaa" : "#6366f1",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: "16px"
+            }}
+          >
+            {creating ? "⏳ Đang chuyển..." : "➕ Tạo công ty"}
+          </button>
+        </div>
       </EmployerLayout>
     );
   }
 
-  // ✅ Có company
+  // Có company
   return (
     <EmployerLayout>
-      <h1>🏢 My Company</h1>
+      <h1>My Company</h1>
 
       <div className="company-card">
-
         <h2>{company.name}</h2>
 
-        <p>
-          <b>Mô tả:</b> {company.description || "Chưa có"}
-        </p>
-
-        <p>
-          <b>Địa chỉ:</b> {company.address || "Chưa có"}
-        </p>
+        <p><b>Mô tả:</b> {company.description || "Chưa có"}</p>
+        <p><b>Địa chỉ:</b> {company.address || "Chưa có"}</p>
 
         <p>
           <b>Trạng thái:</b>{" "}
@@ -72,10 +93,11 @@ export default function MyCompany() {
             {company.status || "PENDING"}
           </span>
         </p>
+
         <button onClick={() => navigate("/employer/company/edit")}>
-             Edit
+          Edit
         </button>
       </div>
     </EmployerLayout>
   );
-}   
+}

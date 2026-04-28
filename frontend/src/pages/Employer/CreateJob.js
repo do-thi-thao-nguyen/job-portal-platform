@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import API from "../../services/api";
 import EmployerLayout from "./EmployerLayout";
 
@@ -16,26 +15,38 @@ export default function CreateJob() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // 🔥 CHECK TOKEN NGAY KHI LOAD
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("🔥 TOKEN:", token);
+
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        console.log("🔥 ROLE:", payload.role);
+      } catch (e) {
+        console.log("❌ Token decode lỗi");
+      }
+    }
+  }, []);
+
   // 🔥 CHECK COMPANY
   useEffect(() => {
     const checkCompany = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/company/my", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        });
+        console.log("🚀 CALL /company/my");
 
-        console.log("Company:", res.data); // 👈 debug
+        const res = await API.get("/company/my");
 
-        // 🔥 FIX CHUẨN 100%
+        console.log("✅ Company:", res.data);
+
         if (!res.data || !res.data.id) {
           alert("Bạn cần tạo công ty trước!");
           navigate("/employer/company/create");
         }
 
       } catch (err) {
-        console.error(err);
+        console.error("❌ COMPANY ERROR:", err.response || err);
         alert("Lỗi xác thực công ty");
       }
     };
@@ -50,9 +61,15 @@ export default function CreateJob() {
 
   const fetchCategories = async () => {
     try {
+      console.log("🚀 CALL /categories");
+
       const res = await API.get("/categories");
+
+      console.log("✅ Categories:", res.data);
+
       setCategories(res.data);
     } catch (err) {
+      console.error("❌ CATEGORY ERROR:", err);
       alert("Failed to load categories");
     }
   };
@@ -65,23 +82,41 @@ export default function CreateJob() {
       return;
     }
 
+    if (isNaN(salary)) {
+      alert("Salary must be a number");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      await API.post("/jobs", {
+      const payload = {
         title,
         description,
         salary: Number(salary),
         category: {
           id: Number(categoryId)
         }
-      });
+      };
+
+      console.log("🚀 POST /jobs");
+      console.log("📦 Payload:", payload);
+
+      await API.post("/jobs", payload);
+
+      console.log("✅ CREATE SUCCESS");
 
       alert("✅ Job created!");
       navigate("/employer/jobs");
 
     } catch (err) {
-      console.error(err);
+      console.error("❌ CREATE JOB ERROR:", err.response || err);
+
+      if (err.response) {
+        console.log("🔥 STATUS:", err.response.status);
+        console.log("🔥 DATA:", err.response.data);
+      }
+
       alert("❌ Create failed");
     } finally {
       setLoading(false);
@@ -107,6 +142,7 @@ export default function CreateJob() {
         />
 
         <input
+          type="number"
           placeholder="Salary"
           value={salary}
           onChange={e => setSalary(e.target.value)}

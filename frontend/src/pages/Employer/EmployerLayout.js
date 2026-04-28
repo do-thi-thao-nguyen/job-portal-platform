@@ -31,6 +31,10 @@ export default function EmployerLayout({ children }) {
           Create Job
         </p>
 
+        <p onClick={() => navigate("/packages")}>
+          Buy Package
+        </p>
+
         <hr />
 
         <p style={{ color: "red", cursor: "pointer" }} onClick={handleLogout}>

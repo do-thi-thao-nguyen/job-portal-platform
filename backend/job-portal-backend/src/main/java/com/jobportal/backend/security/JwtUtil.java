@@ -47,7 +47,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role) // vẫn phải có claim
+                .claim("role", role.replace("ROLE_", "")) // vẫn phải có claim
                 .signWith(SECRET_KEY)
                 .compact();
     }

@@ -28,11 +28,11 @@ function Login() {
       localStorage.setItem("token", data.token);
 
       // redirect theo role
-      if (data.role === "EMPLOYER") {
-        navigate("/employer/jobs");
-      } else {
-        navigate("/jobs");
-      }
+      if (data.role.includes("EMPLOYER")) {
+          navigate("/employer/jobs");
+        } else {
+          navigate("/jobs");
+        }
 
     } catch (err) {
       console.error(err);

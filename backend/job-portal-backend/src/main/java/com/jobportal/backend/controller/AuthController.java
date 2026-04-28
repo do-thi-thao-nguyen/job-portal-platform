@@ -46,9 +46,9 @@ public class AuthController {
 
         // 🔥 PHÂN ROLE
         if (companyName != null && !companyName.isBlank()) {
-            user.setRole("EMPLOYER");
+            user.setRole("ROLE_EMPLOYER");
         } else {
-            user.setRole("USER");
+            user.setRole("ROLE_USER");
         }
 
         User savedUser = userRepository.save(user);

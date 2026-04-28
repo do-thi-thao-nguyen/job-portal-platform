@@ -35,7 +35,7 @@ public class JobController {
 
     // 🔥 CREATE (EMPLOYER)
     @PostMapping
-    public Job createJob(@RequestBody Job job) {
+        public Job createJob(@RequestBody Job job) {
 
         String email = SecurityContextHolder
                 .getContext()
@@ -45,19 +45,41 @@ public class JobController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Company company = companyRepository
-                .findByEmployer_Id(user.getId())
-                .orElseThrow(() -> new RuntimeException("You must create company first"));
+       List<Company> companies = companyRepository.findByEmployer_Id(user.getId());
 
+        if (companies.isEmpty()) {
+        throw new RuntimeException("You must create company first");
+        }
+
+Company company = companies.get(0);
+
+        // ================= 🔥 CHECK PACKAGE =================
+
+        // ❌ chưa mua gói
+        if (company.getCurrentPackage() == null) {
+                throw new RuntimeException("Bạn chưa mua gói. Vui lòng mua gói để đăng tin!");
+        }
+
+        // ❌ hết lượt đăng
+        if (company.getRemainingPosts() == null || company.getRemainingPosts() <= 0) {
+                throw new RuntimeException("Bạn đã hết lượt đăng bài. Vui lòng mua thêm gói!");
+        }
+
+        // ================= CATEGORY =================
         Category category = categoryRepository.findById(job.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
+        // ================= SET DATA =================
         job.setCompany(company);
         job.setCategory(category);
         job.setStatus(JobStatus.PENDING);
 
+        // ================= 🔥 TRỪ LƯỢT =================
+        company.setRemainingPosts(company.getRemainingPosts() - 1);
+        companyRepository.save(company);
+
         return jobRepository.save(job);
-    }
+        }
 
     // 🔥 GET BY ID
     @GetMapping("/{id}")
@@ -132,6 +154,6 @@ public class JobController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return jobRepository.findByCompanyEmployer(user);
+        return jobRepository.findByCompany_Employer(user);
     }
 }

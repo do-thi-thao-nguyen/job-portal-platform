@@ -11,6 +11,9 @@ import CreateJob from "./pages/Employer/CreateJob";
 import CreateCompany from "./pages/Employer/CreateCompany";
 import MyJobs from "./pages/Employer/MyJobs";
 import ApplicationsPage from "./pages/Employer/ApplicationsPage";
+import "./App.css";
+import PackagesPage from "./pages/Employer/PackagesPage";
+import PaymentSuccess from "./pages/Employer/PaymentSuccess";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -69,6 +72,8 @@ function App() {
         <Route path="/employer/create" element={<CreateJob />} />
         <Route path="/employer/company/create" element={<CreateCompany />} />
         <Route path="/employer/jobs/:jobId/applications" element={<ApplicationsPage />} />
+        <Route path="/packages" element={<PackagesPage />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
       </Routes>
 
     </BrowserRouter>

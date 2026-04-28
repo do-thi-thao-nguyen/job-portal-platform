@@ -38,6 +38,12 @@ public class Company {
     @JoinColumn(name = "user_id")
     private User employer;
 
+    @ManyToOne
+    @JoinColumn(name = "current_package_id") 
+    private JobPackage currentPackage;
+
+    private Integer remainingPosts;
+
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -101,5 +107,21 @@ public class Company {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public JobPackage getCurrentPackage() {
+        return currentPackage;
+    }
+
+    public void setCurrentPackage(JobPackage currentPackage) {
+        this.currentPackage = currentPackage;
+    }
+
+    public Integer getRemainingPosts() {
+        return remainingPosts;
+    }
+
+    public void setRemainingPosts(Integer remainingPosts) {
+        this.remainingPosts = remainingPosts;
     }
 }

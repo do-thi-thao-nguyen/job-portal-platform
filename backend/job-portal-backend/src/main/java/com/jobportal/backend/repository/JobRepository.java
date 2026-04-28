@@ -14,5 +14,5 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     long countByStatus(JobStatus status);
     long countByCategory_Id(Long categoryId);
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
-    List<Job> findByCompanyEmployer(User employer);
+    List<Job> findByCompany_Employer(User employer);
 }

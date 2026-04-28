@@ -16,56 +16,71 @@ import java.util.List;
 
 public class JwtFilter extends OncePerRequestFilter {
 
-    // ✅ Bỏ qua auth endpoints
-    @Override
+    // 🔥 BỎ QUA AUTH + MOMO
+   @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/auth");
-    }
+        String path = request.getRequestURI();
 
+        return path.startsWith("/auth");
+    }
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                   HttpServletResponse response,
-                                   FilterChain filterChain)
-            throws ServletException, IOException {
+protected void doFilterInternal(HttpServletRequest request,
+                               HttpServletResponse response,
+                               FilterChain filterChain)
+        throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+    String path = request.getRequestURI();
+    System.out.println("👉 REQUEST PATH: " + path);
 
-        // 🔥 Không có token → bỏ qua
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+    String header = request.getHeader("Authorization");
+    System.out.println("👉 HEADER: " + header);
 
-        String token = header.substring(7);
-
-        String email = JwtUtil.validateToken(token);
-        String role = JwtUtil.getRoleFromToken(token);
-
-        // 🔥 Token lỗi
-        if (email == null || role == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 🔥 Chuẩn hóa ROLE_
-        if (!role.startsWith("ROLE_")) {
-            role = "ROLE_" + role;
-        }
-
-        List<SimpleGrantedAuthority> authorities =
-                List.of(new SimpleGrantedAuthority(role));
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        email,
-                        null,
-                        authorities
-                );
-
-        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
+    // ❌ Không có token
+    if (header == null || !header.startsWith("Bearer ")) {
+        System.out.println("❌ NO TOKEN");
         filterChain.doFilter(request, response);
+        return;
     }
+
+    String token = header.substring(7);
+    System.out.println("🔥 TOKEN: " + token);
+
+    String email = JwtUtil.validateToken(token);
+    String role = JwtUtil.getRoleFromToken(token);
+
+    System.out.println("🔥 EMAIL: " + email);
+    System.out.println("🔥 ROLE: " + role);
+
+    // ❌ Token lỗi
+    if (email == null || role == null) {
+        System.out.println("❌ TOKEN INVALID");
+        filterChain.doFilter(request, response);
+        return;
+    }
+
+    // 🔥 ROLE_
+    if (!role.startsWith("ROLE_")) {
+        role = "ROLE_" + role;
+    }
+
+    System.out.println("✅ FINAL ROLE: " + role);
+
+    List<SimpleGrantedAuthority> authorities =
+            List.of(new SimpleGrantedAuthority(role));
+
+    UsernamePasswordAuthenticationToken auth =
+            new UsernamePasswordAuthenticationToken(
+                    email,
+                    null,
+                    authorities
+            );
+
+    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    System.out.println("✅ AUTH SET SUCCESS");
+
+    filterChain.doFilter(request, response);
+}
 }

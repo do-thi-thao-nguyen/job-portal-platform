@@ -1,10 +1,10 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8080"
 });
 
-// 🔥 TỰ ĐỘNG GẮN TOKEN
+// 🔥 thêm đoạn này
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 

@@ -55,6 +55,8 @@
                 // 🔥 QUAN TRỌNG
                 .requestMatchers("/auth/**").permitAll()
 
+                .requestMatchers("/momo/**").hasRole("EMPLOYER")
+
                 .requestMatchers("/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
 
