@@ -1,123 +1,99 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
 import EmployerLayout from "./EmployerLayout";
 
 export default function CreateJob() {
 
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [salary, setSalary] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [job, setJob] = useState({
+    title: "",
+    description: "",
+    location: "",
+    salaryMin: "",
+    salaryMax: "",
+    category: { id: "" }
+  });
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 CHECK TOKEN NGAY KHI LOAD
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("🔥 TOKEN:", token);
-
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        console.log("🔥 ROLE:", payload.role);
-      } catch (e) {
-        console.log("❌ Token decode lỗi");
-      }
-    }
-  }, []);
-
-  // 🔥 CHECK COMPANY
-  useEffect(() => {
-    const checkCompany = async () => {
-      try {
-        console.log("🚀 CALL /company/my");
-
-        const res = await API.get("/company/my");
-
-        console.log("✅ Company:", res.data);
-
-        if (!res.data || !res.data.id) {
-          alert("Bạn cần tạo công ty trước!");
-          navigate("/employer/company/create");
-        }
-
-      } catch (err) {
-        console.error("❌ COMPANY ERROR:", err.response || err);
-        alert("Lỗi xác thực công ty");
-      }
-    };
-
-    checkCompany();
-  }, [navigate]);
-
-  // 🔥 LOAD CATEGORY
+  // 🔥 load category
   useEffect(() => {
     fetchCategories();
   }, []);
 
   const fetchCategories = async () => {
     try {
-      console.log("🚀 CALL /categories");
-
       const res = await API.get("/categories");
-
-      console.log("✅ Categories:", res.data);
-
       setCategories(res.data);
     } catch (err) {
-      console.error("❌ CATEGORY ERROR:", err);
-      alert("Failed to load categories");
+      console.error(err);
     }
   };
 
-  // 🔥 SUBMIT JOB
-  const handleSubmit = async () => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    if (!title || !description || !salary || !categoryId) {
-      alert("Please fill all fields");
-      return;
+    if (name === "categoryId") {
+      setJob({
+        ...job,
+        category: { id: value }
+      });
+    } else {
+      setJob({
+        ...job,
+        [name]: value
+      });
+    }
+  };
+
+  // 🔥 VALIDATE
+  const validate = () => {
+    if (!job.title.trim()) {
+      alert("Nhập tiêu đề job");
+      return false;
     }
 
-    if (isNaN(salary)) {
-      alert("Salary must be a number");
-      return;
+    if (!job.salaryMin || !job.salaryMax) {
+      alert("Nhập đầy đủ lương");
+      return false;
     }
+
+    if (Number(job.salaryMin) > Number(job.salaryMax)) {
+      alert("Lương min phải nhỏ hơn max");
+      return false;
+    }
+
+    if (!job.category.id) {
+      alert("Chọn category");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
 
     try {
       setLoading(true);
 
-      const payload = {
-        title,
-        description,
-        salary: Number(salary),
-        category: {
-          id: Number(categoryId)
-        }
-      };
+      await API.post("/jobs", {
+        ...job,
+        salaryMin: Number(job.salaryMin),
+        salaryMax: Number(job.salaryMax)
+      });
 
-      console.log("🚀 POST /jobs");
-      console.log("📦 Payload:", payload);
-
-      await API.post("/jobs", payload);
-
-      console.log("✅ CREATE SUCCESS");
-
-      alert("✅ Job created!");
+      alert("Tạo job thành công!");
       navigate("/employer/jobs");
 
     } catch (err) {
-      console.error("❌ CREATE JOB ERROR:", err.response || err);
-
-      if (err.response) {
-        console.log("🔥 STATUS:", err.response.status);
-        console.log("🔥 DATA:", err.response.data);
-      }
-
-      alert("❌ Create failed");
+      console.error(err);
+      alert(err.response?.data || "Tạo job thất bại");
     } finally {
       setLoading(false);
     }
@@ -125,46 +101,109 @@ export default function CreateJob() {
 
   return (
     <EmployerLayout>
-      <h1>➕ Create Job</h1>
+      <div style={{ padding: "40px" }}>
 
-      <div className="form-card">
+        <h1 style={{ marginBottom: "20px" }}>➕ Create Job</h1>
 
-        <input
-          placeholder="Job title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
+        <div style={cardStyle}>
+          <form onSubmit={handleSubmit}>
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-        />
+            <input
+              name="title"
+              placeholder="Job title"
+              value={job.title}
+              onChange={handleChange}
+              style={inputStyle}
+            />
 
-        <input
-          type="number"
-          placeholder="Salary"
-          value={salary}
-          onChange={e => setSalary(e.target.value)}
-        />
+            <textarea
+              name="description"
+              placeholder="Description"
+              value={job.description}
+              onChange={handleChange}
+              style={{ ...inputStyle, height: "80px" }}
+            />
 
-        <select
-          value={categoryId}
-          onChange={e => setCategoryId(e.target.value)}
-        >
-          <option value="">Select category</option>
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+            <input
+              name="location"
+              placeholder="Location"
+              value={job.location}
+              onChange={handleChange}
+              style={inputStyle}
+            />
 
-        <button onClick={handleSubmit} disabled={loading}>
-          {loading ? "Creating..." : "Create Job"}
-        </button>
+            <input
+              type="number"
+              name="salaryMin"
+              placeholder="Salary Min"
+              value={job.salaryMin}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+
+            <input
+              type="number"
+              name="salaryMax"
+              placeholder="Salary Max"
+              value={job.salaryMax}
+              onChange={handleChange}
+              style={inputStyle}
+            />
+
+            <select
+              name="categoryId"
+              value={job.category.id}
+              onChange={handleChange}
+              style={inputStyle}
+            >
+              <option value="">Select category</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: loading ? "#aaa" : "#10b981",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "15px"
+              }}
+            >
+              {loading ? "Đang tạo..." : "Create Job"}
+            </button>
+
+          </form>
+        </div>
 
       </div>
     </EmployerLayout>
   );
 }
+
+// 🎨 STYLE
+const cardStyle = {
+  background: "white",
+  padding: "25px",
+  borderRadius: "12px",
+  width: "420px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  marginBottom: "12px",
+  borderRadius: "8px",
+  border: "1px solid #ddd",
+  fontSize: "14px",
+  outline: "none"
+};

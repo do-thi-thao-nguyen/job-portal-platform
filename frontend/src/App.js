@@ -14,6 +14,7 @@ import EditCompany from "./pages/Employer/EditCompany";
 import ApplicationsPage from "./pages/Employer/ApplicationsPage";
 import PackagesPage from "./pages/Employer/PackagesPage";
 import PaymentSuccess from "./pages/Employer/PaymentSuccess";
+import EditJob from "./pages/Employer/EditJob";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
 
         <Route path="/employer/jobs" element={<MyJobs />} />
         <Route path="/employer/create" element={<CreateJob />} />
+        <Route path="/employer/jobs/edit/:id" element={<EditJob />} />
         <Route path="/packages" element={<PackagesPage />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
 
