@@ -12,6 +12,8 @@ import CreateCompany from "./pages/Employer/CreateCompany";
 import MyJobs from "./pages/Employer/MyJobs";
 import ApplicationsPage from "./pages/Employer/ApplicationsPage";
 
+// import JobsPage from "./pages/User/JobsPage";
+
 function App() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
@@ -19,7 +21,7 @@ function App() {
   return (
     <BrowserRouter>
 
-      {/* 🔥 NAVBAR */}
+      {/* NAVBAR */}
       <nav style={{ padding: "10px", background: "#222", color: "#fff" }}>
         <Link to="/" style={{ marginRight: 10, color: "#fff" }}>Home</Link>
         <Link to="/jobs" style={{ marginRight: 10, color: "#fff" }}>Jobs</Link>
@@ -52,14 +54,14 @@ function App() {
         )}
       </nav>
 
-      {/* 🔥 ROUTES */}
+      {/* ROUTES */}
       <Routes>
         <Route path="/" element={<Welcome />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
         <Route path="/jobs" element={<JobList />} />
-        <Route path="/job/:id" element={<JobDetail />} />
+        <Route path="/jobs/:id" element={<JobDetail />} />
 
         <Route path="/company" element={<Company />} />
         <Route path="/applicants" element={<Applicants />} />
@@ -69,6 +71,8 @@ function App() {
         <Route path="/employer/create" element={<CreateJob />} />
         <Route path="/employer/company/create" element={<CreateCompany />} />
         <Route path="/employer/jobs/:jobId/applications" element={<ApplicationsPage />} />
+
+        {/* USER */}
       </Routes>
 
     </BrowserRouter>
