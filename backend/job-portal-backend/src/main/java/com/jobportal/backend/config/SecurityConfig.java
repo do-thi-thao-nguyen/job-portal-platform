@@ -52,28 +52,32 @@
 
             .authorizeHttpRequests(auth -> auth
 
-                // 🔥 QUAN TRỌNG
-                .requestMatchers("/auth/**").permitAll()
+            // PUBLIC
+            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/categories/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
 
-                .requestMatchers("/momo/**").hasRole("EMPLOYER")
+            // USER + EMPLOYER
+            .requestMatchers("/api/notifications/**").hasAnyRole("USER", "EMPLOYER")
+            .requestMatchers("/applications/**").hasAnyRole("USER", "EMPLOYER")
 
-                .requestMatchers("/categories/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/jobs/**").permitAll()
+            // EMPLOYER
+            .requestMatchers("/jobs/my").hasRole("EMPLOYER")
+            .requestMatchers("/company/**").hasRole("EMPLOYER")
+            .requestMatchers("/momo/**").hasRole("EMPLOYER")
 
-                .requestMatchers("/applications/**").hasAnyRole("USER", "EMPLOYER")
+            .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
+            .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
+            .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
 
-                .requestMatchers("/jobs/my").hasRole("EMPLOYER")
-                .requestMatchers("/company/**").hasRole("EMPLOYER")
+            // ADMIN
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/categories/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/categories/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/categories/**").hasRole("ADMIN")
 
-                .requestMatchers(HttpMethod.POST, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.PUT, "/jobs/**").hasRole("EMPLOYER")
-                .requestMatchers(HttpMethod.DELETE, "/jobs/**").hasRole("EMPLOYER")
-
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                .anyRequest().authenticated()
-            )
-
+            .anyRequest().authenticated()
+        )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )

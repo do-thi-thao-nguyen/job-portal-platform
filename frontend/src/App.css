@@ -219,29 +219,6 @@ p {
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-.dashboard {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 220px;
-  background: #1e293b;
-  color: white;
-  padding: 20px;
-}
-
-.sidebar p, .sidebar li {
-  margin: 10px 0;
-  cursor: pointer;
-}
-
-.content {
-  flex: 1;
-  padding: 30px;
-  background: linear-gradient(135deg, #2b2f77, #9b2c6f);
-  overflow-y: auto;
-}
 
 .packages-container {
   padding: 30px;

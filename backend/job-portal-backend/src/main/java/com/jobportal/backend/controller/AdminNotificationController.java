@@ -6,10 +6,10 @@ import com.jobportal.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;    
+import java.util.List;
 
 @RestController
-@RequestMapping("/admin/notifications")
+@RequestMapping("/api/admin/notifications")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminNotificationController {
 
@@ -19,6 +19,7 @@ public class AdminNotificationController {
     @Autowired
     private UserRepository userRepository;
 
+    // 🔥 SEND TO USER
     @PostMapping("/user/{userId}")
     public Notification send(@PathVariable Long userId,
                              @RequestBody Notification req) {
@@ -32,5 +33,17 @@ public class AdminNotificationController {
         n.setUser(user);
 
         return notificationRepository.save(n);
+    }
+
+    // 🔥 GET ALL (ADMIN VIEW)
+    @GetMapping
+    public List<Notification> getAll() {
+        return notificationRepository.findAll();
+    }
+
+    // 🔥 DELETE
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        notificationRepository.deleteById(id);
     }
 }

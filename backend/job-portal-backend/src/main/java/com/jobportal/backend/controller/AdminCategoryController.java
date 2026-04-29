@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/categories")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminCategoryController {
 
     @Autowired

@@ -16,8 +16,8 @@ import com.jobportal.backend.repository.JobRepository;
 import com.jobportal.backend.repository.UserRepository;
 
 @RestController
-@RequestMapping("/admin/reports")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/admin/reports") // 🔥 thêm /api cho đồng bộ frontend
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminReportController {
 
     @Autowired
@@ -36,11 +36,12 @@ public class AdminReportController {
 
         // ===== USER =====
         long totalUsers = userRepository.count();
-        long totalEmployers = userRepository.countByRole("EMPLOYER");
+        long totalEmployers = userRepository.countByRole("ROLE_EMPLOYER");
 
         // ===== COMPANY =====
         long totalCompanies = companyRepository.count();
         long pendingCompanies = companyRepository.countByStatus(CompanyStatus.PENDING);
+        long approvedCompanies = companyRepository.countByStatus(CompanyStatus.APPROVED); // 🔥 thêm
 
         // ===== JOB =====
         long totalJobs = jobRepository.count();
@@ -53,11 +54,12 @@ public class AdminReportController {
 
         report.put("totalCompanies", totalCompanies);
         report.put("pendingCompanies", pendingCompanies);
+        report.put("approvedCompanies", approvedCompanies);
 
         report.put("totalJobs", totalJobs);
         report.put("pendingJobs", pendingJobs);
         report.put("approvedJobs", approvedJobs);
-        
+
         return report;
     }
 }

@@ -7,11 +7,13 @@ import com.jobportal.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/api/notifications")
+@PreAuthorize("hasAnyRole('USER','EMPLOYER')")
 public class NotificationController {
 
     @Autowired
@@ -34,8 +36,17 @@ public class NotificationController {
     @PutMapping("/{id}/read")
     public Notification markAsRead(@PathVariable Long id) {
 
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Notification n = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
+
+        if (!n.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Forbidden");
+        }
 
         n.setRead(true);
 

@@ -15,7 +15,8 @@ public class Notification {
     private String title;
     private String content;
 
-    private boolean isRead = false;
+    @Column(name = "is_read")
+    private boolean read;
 
     private LocalDateTime createdAt;
 
@@ -37,8 +38,8 @@ public class Notification {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public boolean isRead() { return isRead; }  
-    public void setRead(boolean isRead) { this.isRead = isRead; }
+    public boolean isRead() { return read; }  
+    public void setRead(boolean read) { this.read = read; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

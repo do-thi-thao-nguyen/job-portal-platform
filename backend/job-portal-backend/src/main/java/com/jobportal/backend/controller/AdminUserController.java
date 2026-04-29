@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/users")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/admin/users")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminUserController {
 
     @Autowired
@@ -26,7 +26,7 @@ public class AdminUserController {
     // 1. GET ALL EMPLOYERS
     @GetMapping("/employers")
     public List<User> getEmployers() {
-        return userRepository.findByRole("EMPLOYER"); // 🔥 FIX
+        return userRepository.findByRole("ROLE_EMPLOYER"); // 🔥 FIX
     }
 
     // 2. GET BY ID

@@ -24,20 +24,24 @@ function Login() {
         return;
       }
 
+      const role = data.role || ""; 
       // lưu token
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
 
       // redirect theo role
-      if (data.role.includes("EMPLOYER")) {
-          navigate("/employer/jobs");
-        } else {
-          navigate("/jobs");
-        }
-
-    } catch (err) {
-      console.error(err);
-      alert("Server error");
+      if (role?.includes("ADMIN")) {
+      navigate("/admin/jobs");
+    } else if (role?.includes("EMPLOYER")) {
+      navigate("/employer");
+    } else {
+      navigate("/"); // USER
     }
+
+  } catch (err) {
+    console.error(err);
+    alert("Login failed");
+  }
   };
 
   return (
