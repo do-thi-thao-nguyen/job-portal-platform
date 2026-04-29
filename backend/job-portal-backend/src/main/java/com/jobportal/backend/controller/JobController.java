@@ -4,18 +4,24 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.jobportal.backend.entity.Category;
 import com.jobportal.backend.entity.Company;
 import com.jobportal.backend.entity.Job;
 import com.jobportal.backend.entity.JobStatus;
 import com.jobportal.backend.entity.User;
-import com.jobportal.backend.entity.Category;
-
-import com.jobportal.backend.repository.JobRepository;
-import com.jobportal.backend.repository.CompanyRepository;
-import com.jobportal.backend.repository.UserRepository;
 import com.jobportal.backend.repository.CategoryRepository;
+import com.jobportal.backend.repository.CompanyRepository;
+import com.jobportal.backend.repository.JobRepository;
+import com.jobportal.backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/jobs")
@@ -33,7 +39,7 @@ public class JobController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // 🔥 CREATE (EMPLOYER)
+    // CREATE (EMPLOYER)
     @PostMapping
     public Job createJob(@RequestBody Job job) {
 
@@ -59,14 +65,14 @@ public class JobController {
         return jobRepository.save(job);
     }
 
-    // 🔥 GET BY ID
+    // GET BY ID
     @GetMapping("/{id}")
     public Job getJobById(@PathVariable Long id) {
         return jobRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 
-    // 🔥 UPDATE (EMPLOYER)
+    // UPDATE (EMPLOYER)
     @PutMapping("/{id}")
     public Job updateJob(@PathVariable Long id, @RequestBody Job updatedJob) {
 
@@ -91,7 +97,7 @@ public class JobController {
         Category category = categoryRepository.findById(updatedJob.getCategory().getId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        // ✅ UPDATE FIELD (FIX CHUẨN)
+        // UPDATE FIELD (FIX CHUẨN)
         job.setTitle(updatedJob.getTitle());
         job.setDescription(updatedJob.getDescription());
         job.setSalaryMin(updatedJob.getSalaryMin());
@@ -102,13 +108,13 @@ public class JobController {
         job.setCompany(company);
         job.setCategory(category);
 
-        // 🔥 reset trạng thái
+        // reset trạng thái
         job.setStatus(JobStatus.PENDING);
 
         return jobRepository.save(job);
     }
 
-    // 🔥 DELETE (EMPLOYER)
+    // DELETE (EMPLOYER)
     @DeleteMapping("/{id}")
     public String deleteJob(@PathVariable Long id) {
 
@@ -120,7 +126,7 @@ public class JobController {
         return "Deleted job with id " + id;
     }
 
-    // 🔥 GET MY JOBS
+    // GET MY JOBS
     @GetMapping("/my")
     public List<Job> getMyJobs() {
 
@@ -134,4 +140,8 @@ public class JobController {
 
         return jobRepository.findByCompanyEmployer(user);
     }
+    @GetMapping
+    public List<Job> getAllJobs() {
+        return jobRepository.findAll();
+}
 }

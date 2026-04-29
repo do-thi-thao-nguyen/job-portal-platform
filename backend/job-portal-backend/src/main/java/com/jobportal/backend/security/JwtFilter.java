@@ -1,25 +1,28 @@
 package com.jobportal.backend.security;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
-
 public class JwtFilter extends OncePerRequestFilter {
 
-    // ✅ Bỏ qua auth endpoints
+    // Bỏ qua auth endpoints
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/auth");
+        String path = request.getServletPath();
+
+        return path.startsWith("/auth")
+            || path.startsWith("/applications");
     }
 
     @Override
@@ -30,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        // 🔥 Không có token → bỏ qua
+        // Không có token → bỏ qua
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -41,13 +44,13 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = JwtUtil.validateToken(token);
         String role = JwtUtil.getRoleFromToken(token);
 
-        // 🔥 Token lỗi
+        // Token lỗi
         if (email == null || role == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🔥 Chuẩn hóa ROLE_
+        // Chuẩn hóa ROLE_
         if (!role.startsWith("ROLE_")) {
             role = "ROLE_" + role;
         }
