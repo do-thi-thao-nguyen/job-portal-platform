@@ -2,6 +2,15 @@
 ## Mô tả
 Hệ thống website tuyển dụng giúp kết nối nhà tuyển dụng và ứng viên. Ứng viên có thể tìm kiếm việc làm, nộp CV và theo dõi trạng thái ứng tuyển. Nhà tuyển dụng có thể đăng tin tuyển dụng và quản lý danh sách ứng viên.
 
+Hệ thống hỗ trợ:
+- Ứng viên tìm kiếm việc làm, upload CV và ứng tuyển trực tuyến
+- Theo dõi trạng thái ứng tuyển (PENDING / APPROVED / REJECTED)
+- Nhà tuyển dụng đăng tin tuyển dụng và quản lý ứng viên
+
+Đề tài hướng đến giải quyết vấn đề thực tế:
+- Sinh viên khó tìm việc phù hợp
+- Doanh nghiệp nhỏ khó tiếp cận nền tảng tuyển dụng lớn
+
 ## Thành viên nhóm
 |MSSV|Họ tên|Vai trò|
 |2251010064|Đỗ Thị Thảo Nguyên|Fullstack Developer & Database Manager|
@@ -10,15 +19,16 @@ Hệ thống website tuyển dụng giúp kết nối nhà tuyển dụng và �
 ## Công nghệ sử dụng
 - Backend: Spring Boot (Java)
 - Frontend: ReactJS
-- Database: PostgreSQL
+- Database: MySQL
 - Authentication: Spring Security + JWT
-- API Testing: Postman
+- API: RESTful API
+- Tool: Postman, Git
 
 ## Cài đặt và chạy
 ### Yêu cầu
 - Java 17+
 - Node.js 18+
-- PostgreSQL
+- MySQL
 ### Chạy Backend
 cd backend
 ./mvnw spring-boot:run
@@ -40,7 +50,7 @@ npm start
 - Xem chi tiết thông tin tuyển dụng
 - Ứng tuyển công việc (Apply Job) thông qua hệ thống
 - Lựa chọn và nộp CV khi ứng tuyển
-- Quản lý CV cá nhân (tạo, cập nhật, xóa CV)
+- Quản lý CV cá nhân
 - Xem danh sách các đơn đã ứng tuyển (Application History)
 - Theo dõi trạng thái đơn ứng tuyển: PENDING / APPROVED / REJECTED
 ### Nhà tuyển dụng (Employer)
@@ -56,7 +66,7 @@ npm start
 - Xây dựng API theo kiến trúc RESTful
 - Xác thực và phân quyền bằng Spring Security + JWT
 - Phân quyền người dùng: USER / EMPLOYER / ADMIN
-- Quản lý dữ liệu với PostgreSQL
+- Quản lý dữ liệu với MySQL
 - Validate dữ liệu đầu vào (Request Validation)
 - Xử lý lỗi và trả về response chuẩn (Exception Handling)
 
@@ -77,14 +87,4 @@ job-portal-platform/
 │── README.md
 
 
-## Ghi chú
-- Hệ thống sử dụng JWT để xác thực và bảo mật API
-- Backend xây dựng theo mô hình RESTful
-- Dữ liệu lưu trữ bằng PostgreSQL
-
-### Định hướng phát triển
-- Upload file CV (PDF/DOCX)
-- Lọc việc nâng cao (lương, địa điểm)
-- Dashboard thống kê
-- AI gợi ý việc làm
 
