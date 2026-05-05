@@ -9,14 +9,29 @@ export default function UserDashboard() {
     rejected: 0
   });
 
+  const [loading, setLoading] = useState(true);
+
   const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:8080/applications/my?email=${email}`)
-      .then(res => res.json())
-      .then(data => {
+    if (!email || !token) return;
 
+    fetch(`http://localhost:8080/applications/my?email=${email}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) {
+          console.error("API lỗi:", res.status);
+          return [];
+        }
+        return res.json();
+      })
+      .then(data => {
         const s = {
           total: data.length,
           pending: 0,
@@ -31,16 +46,27 @@ export default function UserDashboard() {
         });
 
         setStats(s);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
       });
-  }, [email]);
+  }, [email, token]);
 
   return (
-    <div style={{ padding: "30px", color: "white" }}>
+    <div style={{
+      padding: "30px",
+      minHeight: "100vh",
+      background: "linear-gradient(to right, #2c3e50, #e84393)",
+      color: "white"
+    }}>
 
       {/* HEADER */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: "30px"
       }}>
         <h2>📊 Dashboard</h2>
@@ -60,32 +86,49 @@ export default function UserDashboard() {
         </button>
       </div>
 
-      {/* CARD */}
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+      {/* LOADING */}
+      {loading && <p>⏳ Loading...</p>}
 
-        <Card title="Tổng" value={stats.total} color="#0984e3" />
-        <Card title="Đang chờ" value={stats.pending} color="#fdcb6e" />
-        <Card title="Đã liên hệ" value={stats.contacted} color="#00b894" />
-        <Card title="Bị từ chối" value={stats.rejected} color="#d63031" />
+      {/* CARDS */}
+      {!loading && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "20px"
+        }}>
 
-      </div>
+          <Card title="Tổng" value={stats.total} color="#0984e3" />
+          <Card title="Đang chờ" value={stats.pending} color="#fdcb6e" />
+          <Card title="Đã liên hệ" value={stats.contacted} color="#00b894" />
+          <Card title="Bị từ chối" value={stats.rejected} color="#d63031" />
 
+        </div>
+      )}
     </div>
   );
 }
 
+// CARD COMPONENT
 function Card({ title, value, color }) {
   return (
     <div style={{
       background: color,
-      padding: "20px",
-      borderRadius: "12px",
-      width: "160px",
+      padding: "25px",
+      borderRadius: "16px",
       textAlign: "center",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-    }}>
-      <h2 style={{ margin: 0 }}>{value}</h2>
-      <p>{title}</p>
+      boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
+      transition: "0.3s",
+      cursor: "pointer"
+    }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.05)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+      }}
+    >
+      <h1 style={{ margin: 0, fontSize: "32px" }}>{value}</h1>
+      <p style={{ margin: "10px 0 0" }}>{title}</p>
     </div>
   );
 }

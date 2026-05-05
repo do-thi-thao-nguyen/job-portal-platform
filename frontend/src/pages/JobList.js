@@ -16,10 +16,13 @@ export default function JobList() {
 
   //  SAVE JOB (BACKEND)
   const [savedJobs, setSavedJobs] = useState([]);
+  
+  const [appliedJobs, setAppliedJobs] = useState([]);
 
   const navigate = useNavigate();
   const email = localStorage.getItem("email");
-
+  const token = localStorage.getItem("token");
+  console.log("APPLIED:", appliedJobs);
   // ================= LOAD JOB =================
   useEffect(() => {
     fetch("http://localhost:8080/jobs")
@@ -36,18 +39,37 @@ export default function JobList() {
         setLoading(false);
       });
   }, []);
+useEffect(() => {
+  if (!email) return;
 
+  fetch(`http://localhost:8080/applications/my?email=${email}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(res => res.ok ? res.json() : [])
+    .then(data => {
+      setAppliedJobs(data.map(item => item.job?.id));
+    })
+    .catch(err => console.error(err));
+
+}, [email, token]);
   // ================= LOAD SAVED JOB =================
-  useEffect(() => {
-    if (!email) return;
+useEffect(() => {
+  if (!email) return;
 
-    fetch(`http://localhost:8080/saved-jobs?email=${email}`)
-      .then(res => res.json())
-      .then(data => {
-        setSavedJobs(data.map(item => item.job.id));
-      })
-      .catch(err => console.error(err));
-  }, [email]);
+  fetch(`http://localhost:8080/saved-jobs?email=${email}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(res => res.ok ? res.json() : [])
+    .then(data => {
+      setSavedJobs(data.map(item => item.job.id));
+    })
+    .catch(err => console.error(err));
+
+}, [email]);
 
   // ================= SAVE / UNSAVE =================
   const toggleSaveJob = async (jobId) => {
@@ -56,17 +78,28 @@ export default function JobList() {
     try {
       if (isSaved) {
         await fetch(`http://localhost:8080/saved-jobs/${jobId}?email=${email}`, {
-          method: "DELETE"
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}` 
+          }
+
         });
       } else {
         await fetch(`http://localhost:8080/saved-jobs/${jobId}?email=${email}`, {
-          method: "POST"
+          method: "POST",
+           headers: {
+              Authorization: `Bearer ${token}` 
+            }
         });
       }
 
       // reload saved jobs
-      const res = await fetch(`http://localhost:8080/saved-jobs?email=${email}`);
-      const data = await res.json();
+    const res = await fetch(`http://localhost:8080/saved-jobs?email=${email}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+      const data = res.ok ? await res.json() : [];
       setSavedJobs(data.map(item => item.job.id));
 
     } catch (err) {
@@ -77,6 +110,8 @@ export default function JobList() {
   // ================= FILTER =================
   const filteredJobs = jobList.filter(job => {
     return (
+      job.status === "APPROVED" && 
+      job.company?.status === "APPROVED" &&
       job.title?.toLowerCase().includes(keyword.toLowerCase()) &&
       (location === "" || job.location === location) &&
       (minSalary === "" || job.salaryMin >= Number(minSalary))
@@ -195,10 +230,31 @@ export default function JobList() {
           borderRadius: "8px"
         }}
       >
-        <option value=""> Tất cả địa điểm</option>
-        <option value="HCM">HCM</option>
-        <option value="HN">HN</option>
-      </select>
+        <option value="">📍 Tất cả địa điểm</option>
+        <option value="TPHCM">HCM</option>
+      <option value="Quận 1">Quận 1</option>
+      <option value="Quận 3">Quận 3</option>
+      <option value="Quận 5">Quận 5</option>
+      <option value="Quận 7">Quận 7</option>
+      <option value="Quận 10">Quận 10</option>
+      <option value="Bình Thạnh">Bình Thạnh</option>
+      <option value="Phú Nhuận">Phú Nhuận</option>
+      <option value="Gò Vấp">Gò Vấp</option>
+      <option value="Thủ Đức">Thủ Đức</option>
+      <option value="Tân Bình">Tân Bình</option>
+      <option value="Tân Phú">Tân Phú</option>
+      <option value="Quận 2">Quận 2</option>
+      <option value="Quận 4">Quận 4</option>
+      <option value="Quận 6">Quận 6</option>
+      <option value="Quận 8">Quận 8</option>
+      <option value="Quận 9">Quận 9</option>
+      <option value="Cần Thơ">Cần Thơ</option>
+      <option value="Hải Phòng">Hải Phòng</option>
+      <option value="Bình Dương">Bình Dương</option>
+      <option value="Đồng Nai">Đồng Nai</option>
+      <option value="Nha Trang">Nha Trang</option>
+      <option value="Huế">Huế</option>
+          </select>
 
       {/*  SALARY */}
       <input
@@ -230,7 +286,7 @@ export default function JobList() {
       {filteredJobs.map(job => {
 
         const isSaved = savedJobs.includes(job.id);
-
+        const isApplied = appliedJobs.includes(job.id);
         return (
           <div
             key={job.id}
@@ -299,27 +355,22 @@ export default function JobList() {
                 {isSaved ? " Đã lưu" : " Lưu"}
               </button>
 
-              {/* APPLY */}
-              <button
-                disabled={job.status !== "APPROVED"}
-                onClick={() => navigate(`/jobs/${job.id}`)}
-                style={{
-                  background:
-                    job.status !== "APPROVED"
-                      ? "#ccc"
-                      : "#ff4d4f",
-                  color: "#fff",
-                  border: "none",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  cursor:
-                    job.status !== "APPROVED"
-                      ? "not-allowed"
-                      : "pointer"
-                }}
-              >
-                Ứng tuyển
-              </button>
+
+          {/* APPLY */}
+          <button
+            disabled={isApplied}
+            onClick={() => navigate(`/jobs/${job.id}`)}
+            style={{
+              background: isApplied ? "#ccc" : "#ff4d4f",
+              color: "#fff",
+              border: "none",
+              padding: "10px",
+              borderRadius: "8px",
+              cursor: isApplied ? "not-allowed" : "pointer"
+            }}
+          >
+            {isApplied ? "Đã ứng tuyển" : "Ứng tuyển"}
+          </button>
 
             </div>
           </div>

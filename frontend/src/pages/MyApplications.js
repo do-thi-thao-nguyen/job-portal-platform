@@ -1,186 +1,243 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function MyApplications() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [applications, setApplications] = useState([]);
+const [loading, setLoading] = useState(true);
 
-  const email = localStorage.getItem("email") || "user@gmail.com";
+const email = localStorage.getItem("email");
+const token = localStorage.getItem("token");
+const navigate = useNavigate();
 
-  // ================= LOAD DATA =================
-  const loadData = () => {
-    setLoading(true); 
-    fetch(`http://localhost:8080/applications/my?email=${email}`)
-      .then(res => {
-        if (!res.ok) throw new Error("API lỗi");
-        return res.json();
-      })
-      .then(data => {
-        setApplications(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+// ================= LOAD DATA =================
+const loadData = () => {
+if (!email || !token) return;
+
+setLoading(true);
+
+fetch(`http://localhost:8080/applications/my?email=${email}`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+})
+  .then(res => res.ok ? res.json() : [])
+  .then(data => {
+    setApplications(Array.isArray(data) ? data : []);
+    setLoading(false);
+  })
+  .catch(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadData();
-  }, [email]);
+useEffect(() => {
+loadData();
+}, [email, token]);
 
-  // ================= CANCEL =================
-  const handleCancel = async (id) => {
-    const confirm = window.confirm("Bạn chắc chắn muốn hủy?");
-    if (!confirm) return;
+// ================= CANCEL =================
+const handleCancel = async (id) => {
+const confirm = window.confirm("Bạn chắc chắn muốn hủy ứng tuyển?");
+if (!confirm) return;
 
-    try {
-      await fetch(`http://localhost:8080/applications/${id}`, {
-        method: "DELETE"
-      });
+await fetch(`http://localhost:8080/applications/${id}`, {
+  method: "DELETE",
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
 
-      alert("Đã hủy ứng tuyển!");
-      loadData();
+loadData();
 
-    } catch (err) {
-      console.error(err);
-      alert("Lỗi server");
-    }
-  };
+};
 
-  // ================= UI =================
-  return (
-    <div style={{
-      maxWidth: "900px",
-      margin: "20px auto",
-      padding: "20px"
-    }}>
+return (
+<div style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
 
-      <h2 style={{ color: "white", marginBottom: "20px" }}>
-        📄 Job đã ứng tuyển
-      </h2>
+  {/* HEADER */}
+  <div style={{
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "20px"
+  }}>
+    <h2 style={{ color: "white" }}> Job đã ứng tuyển</h2>
 
-      <p style={{ color: "white" }}>
-        👤 {email}
-      </p>
+    <button
+      onClick={() => navigate("/jobs")}
+      style={{
+        padding: "8px 15px",
+        borderRadius: "8px",
+        border: "none",
+        background: "#6c5ce7",
+        color: "#fff",
+        cursor: "pointer"
+      }}
+    >
+      ← Quay lại
+    </button>
+  </div>
 
-      {/* LOADING */}
-      {loading && (
-        <p style={{ color: "white" }}>⏳ Loading...</p>
-      )}
+  {/* LOADING */}
+  {loading && <p style={{ color: "white" }}>⏳ Loading...</p>}
 
-      {/* EMPTY */}
-      {!loading && applications.length === 0 && (
-        <p style={{ color: "white" }}>
-          Bạn chưa ứng tuyển job nào
-        </p>
-      )}
+  {/* EMPTY */}
+  {!loading && applications.length === 0 && (
+    <p style={{ color: "white" }}>Bạn chưa ứng tuyển job nào</p>
+  )}
 
-      {/* LIST */}
-      {applications.map(app => (
-        <div
-          key={app.id}
-          style={{
-            background: "#fff",
-            padding: "20px",
-            marginBottom: "15px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-          }}
-        >
-          {/* TITLE */}
-          <h3>
-            <Link to={`/jobs/${app.job?.id}`}>
-              {app.job?.title || "No title"}
-            </Link>
-          </h3>
+  {/* LIST */}
+  {applications.map(app => {
+    const job = app.job;
 
-          <p>{app.job?.company?.name || "No company"}</p>
+    return (
+      <div
+        key={app.id}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          background: "#fff",
+          padding: "20px",
+          marginBottom: "20px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+        }}
+      >
 
-          <p style={{ color: "red" }}>
-            {app.job?.salaryMin?.toLocaleString?.() || 0} - {app.job?.salaryMax?.toLocaleString?.() || 0}
-          </p>
+        {/* TOP */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
 
-          <p>{app.job?.location}</p>
+          {/* LEFT */}
+          <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+            <img
+              src="https://placehold.co/60"
+              alt="logo"
+              style={{ borderRadius: "8px" }}
+            />
 
-          {/* CV */}
-          {app.cvUrl && (
-            <>
-              <button
-                onClick={() => window.open(
-                  `http://localhost:8080/uploads/${app.cvUrl}`,
-                  "_blank"
-                )}
-                style={{
-                  marginTop: "10px",
-                  background: "#007bff",
-                  color: "#fff",
-                  padding: "6px 12px",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer"
-                }}
-              >
-                👁️ Xem CV
-              </button>
+            <div>
+              <h3 style={{ margin: 0 }}>
+                <Link to={`/jobs/${job?.id}`}>
+                  {job?.title || "No title"}
+                </Link>
+              </h3>
 
-              {/* 🔥 PREVIEW PDF */}
-              <iframe
-                src={`http://localhost:8080/uploads/${app.cvUrl}`}
-                width="100%"
-                height="300px"
-                style={{
-                  marginTop: "10px",
-                  borderRadius: "10px",
-                  border: "1px solid #ddd"
-                }}
-              />
-            </>
-          )}
+              <p style={{ margin: 0 }}>{job?.company?.name}</p>
 
-          {/* STATUS */}
-          <div style={{ marginTop: "10px" }}>
-            <span style={{
-              padding: "6px 12px",
-              borderRadius: "20px",
-              fontWeight: "bold",
-              background:
-                app.status === "PENDING"
-                  ? "#fff3cd"
-                  : app.status === "CONTACTED"
-                  ? "#cce5ff"
-                  : "#f8d7da",
-              color:
-                app.status === "PENDING"
-                  ? "#856404"
-                  : app.status === "CONTACTED"
-                  ? "#004085"
-                  : "#721c24"
-            }}>
-              {app.status === "PENDING" && "⏳ Đang chờ"}
-              {app.status === "CONTACTED" && "📞 Đã liên hệ"}
-              {app.status === "REJECTED" && "❌ Bị từ chối"}
-            </span>
+              <p style={{ color: "red", margin: 0 }}>
+                {job?.salaryMin?.toLocaleString()} - {job?.salaryMax?.toLocaleString()}
+              </p>
+
+              <p style={{ margin: 0 }}>{job?.location}</p>
+
+              {/* STATUS */}
+              <div style={{ marginTop: "5px" }}>
+                <span style={{
+                  padding: "5px 10px",
+                  borderRadius: "20px",
+                  fontWeight: "bold",
+                  fontSize: "12px",
+                  background:
+                    app.status === "PENDING"
+                      ? "#fff3cd"
+                      : app.status === "CONTACTED"
+                      ? "#cce5ff"
+                      : "#f8d7da",
+                  color:
+                    app.status === "PENDING"
+                      ? "#856404"
+                      : app.status === "CONTACTED"
+                      ? "#004085"
+                      : "#721c24"
+                }}>
+                  {app.status === "PENDING" && "⏳ Đang chờ"}
+                  {app.status === "CONTACTED" && "📞 Đã liên hệ"}
+                  {app.status === "REJECTED" && "❌ Bị từ chối"}
+                </span>
+              </div>
+
+              {/* CV BUTTON */}
+              {app.cvUrl && (
+                <button
+                  onClick={() =>
+                    window.open(`http://localhost:8080/uploads/${app.cvUrl}`, "_blank")
+                  }
+                  style={{
+                    marginTop: "8px",
+                    background: "#0984e3",
+                    color: "#fff",
+                    border: "none",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    cursor: "pointer"
+                  }}
+                >
+                  📄 Xem CV
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* CANCEL */}
-          <button
-            onClick={() => handleCancel(app.id)}
-            style={{
-              marginTop: "15px",
-              background: "#dc3545",
-              color: "#fff",
-              padding: "6px 12px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer"
-            }}
-          >
-            Hủy ứng tuyển
-          </button>
+          {/* RIGHT */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <button
+              onClick={() => navigate(`/jobs/${job?.id}`)}
+              style={{
+                background: "#00b894",
+                color: "#fff",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                cursor: "pointer"
+              }}
+            >
+              Xem chi tiết
+            </button>
+
+            <button
+              onClick={() => handleCancel(app.id)}
+              style={{
+                background: "#ff4d4f",
+                color: "#fff",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                cursor: "pointer"
+              }}
+            >
+              ❌ Hủy
+            </button>
+          </div>
 
         </div>
-      ))}
-    </div>
-  );
+
+        {/* ================= PREVIEW CV ================= */}
+        {app.cvUrl && (
+          <div style={{ marginTop: "15px" }}>
+            <object
+              data={`http://localhost:8080/uploads/${app.cvUrl}`}
+              type="application/pdf"
+              width="100%"
+              height="250px"
+              style={{ borderRadius: "8px", border: "1px solid #ccc" }}
+            >
+              <p>
+                Không xem được CV.
+                <a
+                  href={`http://localhost:8080/uploads/${app.cvUrl}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Mở tại đây
+                </a>
+              </p>
+            </object>
+          </div>
+        )}
+
+      </div>
+    );
+  })}
+</div>
+);
 }

@@ -6,9 +6,18 @@ export default function Navbar() {
   const location = useLocation();
 
   const email = localStorage.getItem("email");
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role"); // ROLE_USER / ROLE_EMPLOYER
 
   const [open, setOpen] = useState(false);
+
+  // 🔥 ẨN NAVBAR Ở EMPLOYER + AUTH + HOME
+  const hideNavbar =
+    location.pathname === "/" ||
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname.startsWith("/employer");
+
+  if (hideNavbar) return null;
 
   const handleLogout = () => {
     localStorage.clear();
@@ -22,6 +31,10 @@ export default function Navbar() {
     fontWeight: isActive(path) ? "bold" : "normal",
     cursor: "pointer"
   });
+
+  // 🔥 ROLE CHECK CHUẨN
+  const isUser = role === "ROLE_USER";
+  const isEmployer = role === "ROLE_EMPLOYER";
 
   return (
     <div style={{
@@ -60,42 +73,27 @@ export default function Navbar() {
         />
 
         {/* USER MENU */}
-        {role === "USER" && (
+        {isUser && (
           <>
             <span style={menuStyle("/jobs")} onClick={() => navigate("/jobs")}>
-               Jobs
+              Jobs
             </span>
 
             <span style={menuStyle("/saved-jobs")} onClick={() => navigate("/saved-jobs")}>
-               Saved
+              Saved
             </span>
 
             <span style={menuStyle("/my-applications")} onClick={() => navigate("/my-applications")}>
-               Applied
+              Applied
             </span>
 
             <span style={menuStyle("/dashboard")} onClick={() => navigate("/dashboard")}>
-               Dashboard
+              Dashboard
             </span>
           </>
         )}
 
-        {/* EMPLOYER MENU */}
-        {role === "EMPLOYER" && (
-          <>
-            <span style={menuStyle("/employer/jobs")} onClick={() => navigate("/employer/jobs")}>
-               My Jobs
-            </span>
-
-            <span style={menuStyle("/employer/create")} onClick={() => navigate("/employer/create")}>
-               Create
-            </span>
-
-            <span style={menuStyle("/employer/company")} onClick={() => navigate("/employer/company")}>
-               Company
-            </span>
-          </>
-        )}
+        {/* ❌ KHÔNG SHOW MENU EMPLOYER Ở NAVBAR NỮA */}
       </div>
 
       {/* RIGHT */}
@@ -149,16 +147,33 @@ export default function Navbar() {
 
             <hr />
 
-            <button
-              onClick={() => navigate("/dashboard")}
-              style={{ width: "100%", marginTop: "5px" }}
-            >
-              Dashboard
-            </button>
+            {/* 🔥 DASHBOARD THEO ROLE */}
+            {isUser && (
+              <button
+                onClick={() => navigate("/dashboard")}
+                style={{ width: "100%", marginTop: "5px" }}
+              >
+                Dashboard
+              </button>
+            )}
+
+            {isEmployer && (
+              <button
+                onClick={() => navigate("/employer")}
+                style={{ width: "100%", marginTop: "5px" }}
+              >
+                Employer Panel
+              </button>
+            )}
 
             <button
               onClick={handleLogout}
-              style={{ width: "100%", marginTop: "5px", background: "#ef4444", color: "#fff" }}
+              style={{
+                width: "100%",
+                marginTop: "5px",
+                background: "#ef4444",
+                color: "#fff"
+              }}
             >
               Logout
             </button>

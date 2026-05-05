@@ -5,61 +5,107 @@ export default function SavedJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const email = localStorage.getItem("email");
   const navigate = useNavigate();
 
-  const loadSavedJobs = () => {
-    fetch(`http://localhost:8080/saved-jobs?email=${email}`)
-      .then(res => res.json())
-      .then(data => {
-        setJobs(data);
+  const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
+
+  // ================= LOAD =================
+  const loadSavedJobs = async () => {
+    if (!email || !token) return;
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        `http://localhost:8080/saved-jobs?email=${email}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Lỗi API:", res.status);
+        setJobs([]);
         setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+        return;
+      }
+
+      const data = await res.json();
+      setJobs(Array.isArray(data) ? data : []);
+      setLoading(false);
+
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     loadSavedJobs();
-  }, [email]);
+  }, [email, token]);
 
+  // ================= REMOVE =================
   const handleRemove = async (jobId) => {
-    const confirm = window.confirm("Bỏ lưu job này?");
+    const confirm = window.confirm("Bạn có chắc muốn bỏ lưu?");
     if (!confirm) return;
 
     try {
-      await fetch(`http://localhost:8080/saved-jobs/${jobId}?email=${email}`, {
-        method: "DELETE"
-      });
+      const res = await fetch(
+        `http://localhost:8080/saved-jobs/${jobId}?email=${email}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        alert("Xóa thất bại!");
+        return;
+      }
 
       loadSavedJobs();
 
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi xoá");
     }
   };
 
+  // ================= UI =================
   return (
-    <div style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
+    <div
+      style={{
+        padding: "20px",
+        minHeight: "100vh",
+        background: "linear-gradient(to right, #2c3e50, #e84393)"
+      }}
+    >
 
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginBottom: "20px"
-      }}>
-        <h2 style={{ color: "white" }}> Job đã lưu</h2>
+      {/* HEADER */}
+      <div
+        style={{
+          maxWidth: "900px",
+          margin: "0 auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "25px"
+        }}
+      >
+        <h2 style={{ color: "#fff" }}>💾 Job đã lưu</h2>
 
         <button
           onClick={() => navigate("/jobs")}
           style={{
-            padding: "8px 15px",
-            borderRadius: "8px",
-            border: "none",
             background: "#6c5ce7",
             color: "#fff",
+            border: "none",
+            padding: "8px 15px",
+            borderRadius: "8px",
             cursor: "pointer"
           }}
         >
@@ -67,68 +113,111 @@ export default function SavedJobs() {
         </button>
       </div>
 
-      {loading && <p style={{ color: "white" }}>⏳ Loading...</p>}
+      {/* CONTENT */}
+      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
 
-      {!loading && jobs.length === 0 && (
-        <p style={{ color: "white" }}>Bạn chưa lưu job nào</p>
-      )}
+        {/* LOADING */}
+        {loading && <p style={{ color: "#fff" }}>⏳ Loading...</p>}
 
-      {jobs.map(item => {
-        if (!item.job) return null;
+        {/* EMPTY */}
+        {!loading && jobs.length === 0 && (
+          <p style={{ color: "#fff" }}>Bạn chưa lưu job nào</p>
+        )}
 
-        const job = item.job;
+        {/* LIST */}
+        {jobs.map(item => {
+          if (!item.job) return null;
 
-        return (
-          <div
-            key={item.id}
-            style={{
-              background: "#fff",
-              padding: "20px",
-              marginBottom: "15px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              cursor: "pointer",
-              transition: "0.3s"
-            }}
-            onClick={() => navigate(`/jobs/${job.id}`)}
+          const job = item.job;
 
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "scale(1.03)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
-            <h3>{job.title}</h3>
-
-            <p>{job.company?.name}</p>
-
-            <p style={{ color: "red" }}>
-              {job.salaryMin?.toLocaleString()} - {job.salaryMax?.toLocaleString()}
-            </p>
-
-            <p>{job.location}</p>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove(job.id);
-              }}
+          return (
+            <div
+              key={item.id}
+              onClick={() => navigate(`/jobs/${job.id}`)}
               style={{
-                marginTop: "10px",
-                background: "#dc3545",
-                color: "#fff",
-                border: "none",
-                padding: "6px 12px",
-                borderRadius: "8px",
-                cursor: "pointer"
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "#fff",
+                padding: "18px",
+                marginBottom: "15px",
+                borderRadius: "14px",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
+                cursor: "pointer",
+                transition: "0.25s"
               }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.03)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
             >
-              ❌ Bỏ lưu
-            </button>
-          </div>
-        );
-      })}
+
+              {/* LEFT */}
+              <div style={{ display: "flex", gap: "15px" }}>
+
+                <img
+                  src="https://placehold.co/70"
+                  alt="logo"
+                  style={{ borderRadius: "10px" }}
+                />
+
+                <div>
+                  <h3 style={{ margin: 0 }}>{job.title}</h3>
+                  <p style={{ margin: 0 }}>{job.company?.name}</p>
+
+                  <p style={{ color: "red", margin: 0 }}>
+                    {job.salaryMin?.toLocaleString()} -{" "}
+                    {job.salaryMax?.toLocaleString()}
+                  </p>
+
+                  <p style={{ margin: 0 }}>{job.location}</p>
+                </div>
+              </div>
+
+              {/* RIGHT */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(job.id);
+                  }}
+                  style={{
+                    background: "#ff4d4f",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    cursor: "pointer"
+                  }}
+                >
+                  ❌ Bỏ lưu
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/jobs/${job.id}`);
+                  }}
+                  style={{
+                    background: "#00b894",
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    cursor: "pointer"
+                  }}
+                >
+                   Xem
+                </button>
+
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

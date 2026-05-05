@@ -17,54 +17,51 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        alert(data.error || "Login failed");
+        const text = await res.text();
+        alert(text || "Login failed");
         return;
       }
 
-      const role = data.role || ""; 
-      // lưu token
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
+      const data = await res.json();
+      const token = data.token || data.accessToken;
 
-      // redirect theo role
-      if (role?.includes("ADMIN")) {
-      navigate("/admin/jobs");
-    } else if (role?.includes("EMPLOYER")) {
-      navigate("/employer");
-    } else {
-      navigate("/"); // USER
+      if (!token) {
+        alert("Không nhận được token");
+        return;
+      }
+
+      console.log("TOKEN:", token);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", data.role || "");
+      localStorage.setItem("email", email);
+
+      const role = data.role || "";
+
+      if (role.includes("ROLE_ADMIN")) {
+        navigate("/admin/jobs");
+      } else if (role.includes("ROLE_EMPLOYER")) {
+        navigate("/employer");
+      } else {
+        navigate("/jobs");
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Login failed");
     }
-
-  } catch (err) {
-    console.error(err);
-    alert("Login failed");
-  }
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",   // 🔥 QUAN TRỌNG
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "linear-gradient(to right, #2c3e50, #e84393)"
-    }}>
-      <div style={{
-        background: "white",
-        padding: "30px",
-        borderRadius: "10px",
-        width: "300px"
-      }}>
-        <h2>Login</h2>
+    <div style={wrapper}>
+      <div style={card}>
+        <h2 style={title}>Login</h2>
 
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px" }}
+          style={input}
         />
 
         <input
@@ -72,15 +69,79 @@ function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: "10px" }}
+          style={input}
         />
 
-        <button onClick={handleLogin} style={{ width: "100%" }}>
+        <button onClick={handleLogin} style={button}>
           Login
         </button>
+
+        <p style={footer}>
+          Chưa có tài khoản?{" "}
+          <span style={link} onClick={() => navigate("/register")}>
+            Đăng ký
+          </span>
+        </p>
       </div>
     </div>
   );
 }
 
 export default Login;
+
+//
+// ===== STYLE =====
+//
+
+const wrapper = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "linear-gradient(to right, #2c3e50, #e84393)" // 🔥 giống hình
+};
+
+const card = {
+  background: "#fff",
+  padding: "30px",
+  borderRadius: "12px",
+  width: "320px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+  textAlign: "center"
+};
+
+const title = {
+  marginBottom: "20px"
+};
+
+const input = {
+  width: "100%",
+  padding: "10px",
+  marginBottom: "12px",
+  borderRadius: "8px",
+  border: "1px solid #ddd",
+  outline: "none"
+};
+
+const button = {
+  width: "100%",
+  padding: "10px",
+  borderRadius: "8px",
+  border: "none",
+  background: "linear-gradient(to right, #6c5ce7, #e84393)",
+  color: "#fff",
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "0.3s"
+};
+
+const footer = {
+  marginTop: "15px",
+  fontSize: "13px"
+};
+
+const link = {
+  color: "#e84393",
+  cursor: "pointer",
+  fontWeight: "bold"
+};
