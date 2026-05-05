@@ -38,10 +38,10 @@ public class AdminCompanyService {
         company.setStatus(CompanyStatus.APPROVED);
         companyRepository.save(company);
 
-        // 🔥 SEND NOTIFICATION
+        // SEND NOTIFICATION
         if (company.getEmployer() != null) {
             Notification n = new Notification();
-            n.setTitle("🎉 Company Approved");
+            n.setTitle(" Company Approved");
             n.setContent("Công ty \"" + company.getName() + "\" đã được duyệt");
             n.setUser(company.getEmployer());
 
@@ -62,10 +62,10 @@ public class AdminCompanyService {
         company.setStatus(CompanyStatus.REJECTED);
         companyRepository.save(company);
 
-        // 🔥 SEND NOTIFICATION
+        // SEND NOTIFICATION
         if (company.getEmployer() != null) {
             Notification n = new Notification();
-            n.setTitle("❌ Company Rejected");
+            n.setTitle("Company Rejected");
             n.setContent("Công ty \"" + company.getName() + "\" đã bị từ chối");
             n.setUser(company.getEmployer());
 

@@ -23,7 +23,7 @@ public class CompanyController {
     private UserRepository userRepository;
 
     // =============================
-    // 🔥 CREATE COMPANY (1 USER = 1 COMPANY)
+    // CREATE COMPANY (1 USER = 1 COMPANY)
     // =============================
     @PostMapping
     public Company create(@RequestBody Company company) {
@@ -36,7 +36,7 @@ public class CompanyController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 🔥 CHẶN TẠO NHIỀU COMPANY
+        // CHẶN TẠO NHIỀU COMPANY
         List<Company> existing = companyRepository.findByEmployer_Id(user.getId());
 
         if (!existing.isEmpty()) {
@@ -50,7 +50,7 @@ public class CompanyController {
     }
 
     // =============================
-    // 🔥 GET MY COMPANY
+    // GET MY COMPANY
     // =============================
     @GetMapping("/my")
     public Company getMyCompany() {
@@ -77,7 +77,7 @@ public class CompanyController {
     }
 
     // =============================
-    // 🔥 UPDATE MY COMPANY
+    // UPDATE MY COMPANY
     // =============================
     @PutMapping("/my")
     public Company updateMyCompany(@RequestBody Company updatedCompany) {
@@ -106,7 +106,7 @@ public class CompanyController {
     }
 
     // =============================
-    // 🔥 DELETE COMPANY (optional)
+    // DELETE COMPANY (optional)
     // =============================
     @DeleteMapping("/my")
     public String deleteMyCompany() {

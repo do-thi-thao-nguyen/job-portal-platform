@@ -41,12 +41,12 @@ public class ApplicationService {
         CV cv = cvRepository.findById(request.getCvId())
                 .orElseThrow(() -> new RuntimeException("CV not found"));
 
-        // ✅ check CV thuộc user
+        // check CV thuộc user
         if (!cv.getUser().getId().equals(userId)) {
             throw new RuntimeException("CV không thuộc user");
         }
 
-        // ✅ FIX: dùng entity relation
+        // FIX: dùng entity relation
         if (applicationRepository.existsByUser_IdAndJob_Id(userId, request.getJobId())) {
             throw new RuntimeException("Bạn đã apply job này rồi");
         }
@@ -70,21 +70,21 @@ public class ApplicationService {
     // GET MY APPLICATIONS
     // ==============================
     public List<Application> getMyApplications(Long userId) {
-        return applicationRepository.findByUser_Id(userId); // ✅ FIX
+        return applicationRepository.findByUser_Id(userId); // FIX
     }
 
     // ==============================
     // EMPLOYER - SEARCH
     // ==============================
     public List<Application> search(Long jobId, String email) {
-        return applicationRepository.findByJob_IdAndUser_EmailContainingIgnoreCase(jobId, email); // ✅ FIX
+        return applicationRepository.findByJob_IdAndUser_EmailContainingIgnoreCase(jobId, email); // FIX
     }
 
     // ==============================
     // EMPLOYER - GET BY JOB
     // ==============================
     public List<Application> getByJob(Long jobId) {
-        return applicationRepository.findByJob_Id(jobId); // ✅ FIX
+        return applicationRepository.findByJob_Id(jobId); // FIX
     }
 
     // ==============================
@@ -96,7 +96,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         try {
-            ApplicationStatus newStatus = ApplicationStatus.valueOf(status.toUpperCase()); // ✅ FIX
+            ApplicationStatus newStatus = ApplicationStatus.valueOf(status.toUpperCase()); // FIX
             app.setStatus(newStatus);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Status không hợp lệ");

@@ -10,7 +10,7 @@ export default function Navbar() {
 
   const [open, setOpen] = useState(false);
 
-  // 🔥 ẨN NAVBAR Ở EMPLOYER + AUTH + HOME
+  // ẨN NAVBAR Ở EMPLOYER + AUTH + HOME
   const hideNavbar =
     location.pathname === "/" ||
     location.pathname === "/login" ||
@@ -32,7 +32,7 @@ export default function Navbar() {
     cursor: "pointer"
   });
 
-  // 🔥 ROLE CHECK CHUẨN
+  // ROLE CHECK CHUẨN
   const isUser = role === "ROLE_USER";
   const isEmployer = role === "ROLE_EMPLOYER";
 

@@ -16,7 +16,7 @@ import com.jobportal.backend.repository.JobRepository;
 import com.jobportal.backend.repository.UserRepository;
 
 @RestController
-@RequestMapping("/api/admin/reports") // 🔥 thêm /api cho đồng bộ frontend
+@RequestMapping("/api/admin/reports") 
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminReportController {
 
@@ -41,7 +41,7 @@ public class AdminReportController {
         // ===== COMPANY =====
         long totalCompanies = companyRepository.count();
         long pendingCompanies = companyRepository.countByStatus(CompanyStatus.PENDING);
-        long approvedCompanies = companyRepository.countByStatus(CompanyStatus.APPROVED); // 🔥 thêm
+        long approvedCompanies = companyRepository.countByStatus(CompanyStatus.APPROVED); 
 
         // ===== JOB =====
         long totalJobs = jobRepository.count();

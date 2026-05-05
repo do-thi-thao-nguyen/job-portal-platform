@@ -19,13 +19,13 @@ public class JobPackageController {
     @Autowired
     private CompanyRepository companyRepository;
 
-    // 📦 lấy danh sách gói
+    // lấy danh sách gói
     @GetMapping("/packages")
     public List<JobPackage> getPackages() {
         return packageRepository.findAll();
     }
 
-    // 💳 mua gói
+    // mua gói
     @PostMapping("/buy/{companyId}/{packageId}")
     public Object buyPackage(@PathVariable Long companyId,
                             @PathVariable Long packageId) {
@@ -36,10 +36,10 @@ public class JobPackageController {
         JobPackage pack = packageRepository.findById(packageId)
                 .orElseThrow(() -> new RuntimeException("Package not found"));
 
-        // 👉 gán gói
+        // gán gói
         company.setCurrentPackage(pack);
 
-        // 👉 reset số lượt đăng
+        // reset số lượt đăng
         company.setRemainingPosts(pack.getPostLimit());
 
         return companyRepository.save(company);

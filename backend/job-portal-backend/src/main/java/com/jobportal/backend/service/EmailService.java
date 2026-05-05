@@ -24,7 +24,7 @@ public class EmailService {
         helper.setTo(to);
         helper.setSubject(subject);
 
-        // 🔥 QUAN TRỌNG
+        // QUAN TRỌNG
         helper.setText(content, true);
 
         mailSender.send(message);

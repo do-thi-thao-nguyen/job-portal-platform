@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtFilter extends OncePerRequestFilter {
 
-    // 🔥 BỎ QUA AUTH
+    //  BỎ QUA AUTH
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -35,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         System.out.println("👉 HEADER: " + header);
 
-        // ❌ Không có token
+        // Không có token
         if (header == null || !header.startsWith("Bearer ")) {
             System.out.println("❌ NO TOKEN");
             filterChain.doFilter(request, response);
@@ -51,14 +51,14 @@ public class JwtFilter extends OncePerRequestFilter {
         System.out.println("🔥 EMAIL: " + email);
         System.out.println("🔥 ROLE: " + role);
 
-        // ❌ Token lỗi
+        // Token lỗi
         if (email == null || role == null) {
             System.out.println("❌ TOKEN INVALID");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🔥 ROLE_
+        // ROLE_
         if (!role.startsWith("ROLE_")) {
             role = "ROLE_" + role;
         }

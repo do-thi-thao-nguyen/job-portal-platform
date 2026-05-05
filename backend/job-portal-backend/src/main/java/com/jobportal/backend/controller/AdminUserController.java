@@ -26,7 +26,7 @@ public class AdminUserController {
     // 1. GET ALL EMPLOYERS
     @GetMapping("/employers")
     public List<User> getEmployers() {
-        return userRepository.findByRole("ROLE_EMPLOYER"); // 🔥 FIX
+        return userRepository.findByRole("ROLE_EMPLOYER"); 
     }
 
     // 2. GET BY ID

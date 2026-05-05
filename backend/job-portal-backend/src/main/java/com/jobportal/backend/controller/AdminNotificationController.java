@@ -19,7 +19,7 @@ public class AdminNotificationController {
     @Autowired
     private UserRepository userRepository;
 
-    // 🔥 SEND TO USER
+    // SEND TO USER
     @PostMapping("/user/{userId}")
     public Notification send(@PathVariable Long userId,
                              @RequestBody Notification req) {
@@ -35,13 +35,13 @@ public class AdminNotificationController {
         return notificationRepository.save(n);
     }
 
-    // 🔥 GET ALL (ADMIN VIEW)
+    // GET ALL (ADMIN VIEW)
     @GetMapping
     public List<Notification> getAll() {
         return notificationRepository.findAll();
     }
 
-    // 🔥 DELETE
+    // DELETE
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         notificationRepository.deleteById(id);

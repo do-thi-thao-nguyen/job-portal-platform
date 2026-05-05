@@ -18,7 +18,7 @@ export default function EditJob() {
 
   const [loading, setLoading] = useState(false);
 
-  // 🔥 load job detail
+  // load job detail
   useEffect(() => {
     const fetchJob = async () => {
       try {
@@ -33,7 +33,7 @@ export default function EditJob() {
     fetchJob();
   }, [id]);
 
-  // 🔥 handle input
+  // handle input
   const handleChange = (e) => {
     setJob({
       ...job,
@@ -41,7 +41,7 @@ export default function EditJob() {
     });
   };
 
-  // 🔥 submit update
+  // submit update
   const handleSubmit = async (e) => {
     e.preventDefault();
 

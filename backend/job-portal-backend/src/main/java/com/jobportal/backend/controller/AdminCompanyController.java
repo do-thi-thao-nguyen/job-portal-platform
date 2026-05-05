@@ -17,19 +17,19 @@ public class AdminCompanyController {
     @Autowired
     private AdminCompanyService adminCompanyService;
 
-    // 🔥 1. Lấy danh sách pending
+    // 1. Lấy danh sách pending
     @GetMapping("/pending")
     public List<Company> getPendingCompanies() {
         return adminCompanyService.getPendingCompanies();
     }
 
-    // 🔥 2. Approve
+    // 2. Approve
     @PutMapping("/{id}/approve")
     public Company approveCompany(@PathVariable Long id) {
         return adminCompanyService.approveCompany(id);
     }
 
-    // 🔥 3. Reject
+    // 3. Reject
     @PutMapping("/{id}/reject")
     public Company rejectCompany(@PathVariable Long id) {
         return adminCompanyService.rejectCompany(id);

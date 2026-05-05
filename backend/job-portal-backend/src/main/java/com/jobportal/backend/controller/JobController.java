@@ -59,14 +59,14 @@ public class JobController {
 
 Company company = companies.get(0);
 
-        // ================= 🔥 CHECK PACKAGE =================
+        // ================= CHECK PACKAGE =================
 
-        // ❌ chưa mua gói
+        // chưa mua gói
         if (company.getCurrentPackage() == null) {
                 throw new RuntimeException("Bạn chưa mua gói. Vui lòng mua gói để đăng tin!");
         }
 
-        // ❌ hết lượt đăng
+        // hết lượt đăng
         if (company.getRemainingPosts() == null || company.getRemainingPosts() <= 0) {
                 throw new RuntimeException("Bạn đã hết lượt đăng bài. Vui lòng mua thêm gói!");
         }
@@ -80,7 +80,7 @@ Company company = companies.get(0);
         job.setCategory(category);
         job.setStatus(JobStatus.PENDING);
 
-        // ================= 🔥 TRỪ LƯỢT =================
+        // ================= TRỪ LƯỢT =================
         company.setRemainingPosts(company.getRemainingPosts() - 1);
         companyRepository.save(company);
 

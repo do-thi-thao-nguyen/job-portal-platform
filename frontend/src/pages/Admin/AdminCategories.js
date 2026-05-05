@@ -6,7 +6,7 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [name, setName] = useState("");
 
-  // 🔥 edit state
+  // edit state
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
 

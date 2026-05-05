@@ -17,7 +17,7 @@ public class AdminCategoryController {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // 🔥 CREATE
+    // CREATE
     @PostMapping
     public Category create(@RequestBody Category category) {
 
@@ -29,20 +29,20 @@ public class AdminCategoryController {
         return categoryRepository.save(category);
     }
 
-    // 🔥 GET ALL
+    // GET ALL
     @GetMapping
     public List<Category> getAll() {
         return categoryRepository.findAll();
     }
 
-    // 🔥 GET BY ID (THÊM MỚI)
+    // GET BY ID (THÊM MỚI)
     @GetMapping("/{id}")
     public Category getById(@PathVariable Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
     }
 
-    // 🔥 UPDATE
+    // UPDATE
     @PutMapping("/{id}")
     public Category update(@PathVariable Long id, @RequestBody Category updated) {
 
@@ -54,7 +54,7 @@ public class AdminCategoryController {
         return categoryRepository.save(category);
     }
 
-    // 🔥 DELETE
+    // DELETE
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
 

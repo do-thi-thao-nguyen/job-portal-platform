@@ -49,7 +49,7 @@ public class AuthController {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
 
-        // 🔥 PHÂN ROLE
+        // PHÂN ROLE
         if (companyName != null && !companyName.isBlank()) {
             user.setRole("ROLE_EMPLOYER");
         } else {

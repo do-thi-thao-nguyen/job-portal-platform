@@ -10,13 +10,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
-@CrossOrigin(origins = "http://localhost:3000") // 👈 thêm cho chắc
+@CrossOrigin(origins = "http://localhost:3000") 
 public class CategoryController {
 
     @Autowired
     private CategoryRepository categoryRepository;
 
-    // 🔥 API frontend đang gọi
     @GetMapping
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();

@@ -50,7 +50,7 @@ public Map<String, String> create(
     System.out.println("packageId = " + packageId);
     System.out.println("companyId = " + companyId);
 
-    // 🔥 GET USER
+    // GET USER
     String email = SecurityContextHolder.getContext()
             .getAuthentication()
             .getName();
@@ -62,30 +62,30 @@ public Map<String, String> create(
 
     System.out.println("USER ID = " + user.getId());
 
-    // 🔥 GET COMPANY (THEO ID FE GỬI)
+    // GET COMPANY (THEO ID FE GỬI)
     Company company = companyRepository.findById(companyId)
             .orElseThrow(() -> new RuntimeException("Company not found"));
 
     System.out.println("COMPANY OWNER ID = " + company.getEmployer().getId());
 
-    // 🔥 CHECK OWNER
+    // CHECK OWNER
     if (!company.getEmployer().getId().equals(user.getId())) {
         System.out.println("❌ NOT OWNER");
         throw new RuntimeException("Không phải công ty của bạn");
     }
 
-    // 🔥 GET PACKAGE
+    // GET PACKAGE
     JobPackage jobPackage = packageRepository.findById(packageId)
             .orElseThrow(() -> new RuntimeException("Package not found"));
 
-    // 🔥 CREATE ORDER
+    // CREATE ORDER
     String orderId = "order_" + System.currentTimeMillis();
     Long amount = jobPackage.getPrice(); // 🔥 dùng đúng giá package
 
     System.out.println("ORDER ID = " + orderId);
     System.out.println("AMOUNT = " + amount);
 
-    // 🔥 SAVE TRANSACTION
+    // SAVE TRANSACTION
     PaymentTransaction tx = new PaymentTransaction();
     tx.setOrderId(orderId);
     tx.setAmount(amount);
@@ -95,7 +95,7 @@ public Map<String, String> create(
 
     transactionRepository.save(tx);
 
-    // 🔥 CALL MOMO
+    // CALL MOMO
     String payUrl = momoService.createPayment(
             amount,
             orderId,
@@ -113,7 +113,7 @@ public Map<String, String> create(
     @PostMapping("/ipn")
     public String handleMomo(@RequestBody Map<String, Object> body) {
 
-        System.out.println("🔥 MOMO IPN HIT: " + body);
+        System.out.println(" MOMO IPN HIT: " + body);
 
         String orderId = (String) body.get("orderId");
         Integer resultCode = (Integer) body.get("resultCode");
@@ -123,7 +123,7 @@ public Map<String, String> create(
                 .findByOrderId(orderId)
                 .orElseThrow();
 
-        // 🔥 tránh xử lý lại nhiều lần
+        // tránh xử lý lại nhiều lần
         if ("SUCCESS".equals(tx.getStatus())) {
             return "OK";
         }
@@ -133,7 +133,7 @@ public Map<String, String> create(
             tx.setStatus("SUCCESS");
 
             // =============================
-            // 🔥 DECODE extraData
+            //  DECODE extraData
             // =============================
             String decoded = new String(
                     java.util.Base64.getDecoder().decode(extraData)
@@ -146,7 +146,7 @@ public Map<String, String> create(
             Long packageId = Long.parseLong(parts[1].split("=")[1]);
 
             // =============================
-            // 🔥 UPDATE COMPANY
+            // UPDATE COMPANY
             // =============================
             Company company = companyRepository.findById(companyId).orElseThrow();
             JobPackage jobPackage = packageRepository.findById(packageId).orElseThrow();
