@@ -9,20 +9,29 @@ import com.jobportal.backend.entity.ApplicationStatus;
 
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
+    // check đã apply chưa
     boolean existsByUser_IdAndJob_Id(Long userId, Long jobId);
 
+    // lấy theo user
     List<Application> findByUser_Id(Long userId);
 
+    List<Application> findByUser_Email(String email);
+
+    // lấy theo job
     List<Application> findByJob_Id(Long jobId);
 
-    List<Application> findByJob_IdAndEmailContaining(Long jobId, String email);
-    List<Application> findByJob_IdAndStatus(Long jobId, ApplicationStatus status);
-    // 🔍 search email
-    List<Application> findByJob_IdAndEmailContainingIgnoreCase(Long jobId, String email);
+    // ===== SEARCH =====
 
-    List<Application> findByJob_IdAndEmailContainingIgnoreCaseAndStatus(
-        Long jobId,
-        String email,
-        ApplicationStatus status
+    // search email
+    List<Application> findByJob_IdAndUser_EmailContainingIgnoreCase(Long jobId, String email);
+
+    // filter status
+    List<Application> findByJob_IdAndStatus(Long jobId, ApplicationStatus status);
+
+    // search email + status
+    List<Application> findByJob_IdAndUser_EmailContainingIgnoreCaseAndStatus(
+            Long jobId,
+            String email,
+            ApplicationStatus status
     );
 }

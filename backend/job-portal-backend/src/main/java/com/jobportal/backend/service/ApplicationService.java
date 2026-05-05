@@ -77,7 +77,7 @@ public class ApplicationService {
     // EMPLOYER - SEARCH
     // ==============================
     public List<Application> search(Long jobId, String email) {
-        return applicationRepository.findByJob_IdAndEmailContaining(jobId, email); // ✅ FIX
+        return applicationRepository.findByJob_IdAndUser_EmailContainingIgnoreCase(jobId, email); // ✅ FIX
     }
 
     // ==============================

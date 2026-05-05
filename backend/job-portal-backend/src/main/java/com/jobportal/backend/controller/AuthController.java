@@ -3,8 +3,13 @@ package com.jobportal.backend.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.jobportal.backend.entity.User;
 import com.jobportal.backend.repository.UserRepository;
@@ -62,17 +67,19 @@ public class AuthController {
 
     // ================= LOGIN =================
     @PostMapping("/login")
-    public Object login(@RequestBody User user) {
+     public ResponseEntity<?> login(@RequestBody User user) {
 
         User existingUser = userRepository.findByEmail(user.getEmail())
                 .orElse(null);
 
         if (existingUser == null) {
-            return Map.of("error", "User not found");
+            return ResponseEntity.status(401)
+            .body(Map.of("error","User not found"));
         }
 
         if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            return Map.of("error", "Wrong password");
+             return ResponseEntity.status(401)
+                    .body(Map.of("error", "Wrong password"));
         }
 
         String token = JwtUtil.generateToken(
@@ -80,11 +87,11 @@ public class AuthController {
                 existingUser.getRole()
         );
 
-        return Map.of(
+        return ResponseEntity.ok(Map.of(
                 "token", token,
                 "email", existingUser.getEmail(),
                 "role", existingUser.getRole()
-        );
+        ));
     }
 
     // ================= TEST =================

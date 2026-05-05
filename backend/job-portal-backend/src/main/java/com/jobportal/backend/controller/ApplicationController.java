@@ -1,17 +1,18 @@
 package com.jobportal.backend.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.jobportal.backend.entity.Application;
-import com.jobportal.backend.entity.ApplicationStatus;
-import com.jobportal.backend.entity.Job;
-import com.jobportal.backend.repository.ApplicationRepository;
-import com.jobportal.backend.repository.JobRepository;
+import com.jobportal.backend.entity.*;
+import com.jobportal.backend.repository.*;
 import com.jobportal.backend.service.EmailService;
-
 
 @RestController
 @RequestMapping("/applications")
@@ -21,44 +22,58 @@ public class ApplicationController {
     private ApplicationRepository applicationRepository;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private JobRepository jobRepository;
 
-    // 🔥 APPLY JOB
-    @PostMapping("/{jobId}")
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    // ================= APPLY JOB =================
+    @PostMapping(value = "/{jobId}", consumes = "multipart/form-data")
     public Application apply(
             @PathVariable Long jobId,
-            @RequestBody Application req
-    ) {
+            @RequestParam("email") String email,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) throws IOException {
 
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        if (job.getStatus() == null || !job.getStatus().name().equals("APPROVED")) {
-            throw new RuntimeException("Job not approved");
-        }
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Application app = new Application();
+        app.setUser(user);
         app.setJob(job);
-        app.setEmail(req.getEmail());
-        app.setCvUrl(req.getCvUrl());
         app.setStatus(ApplicationStatus.PENDING);
+
+        // upload CV
+        if (file != null && !file.isEmpty()) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+            Path uploadDir = Paths.get("uploads");
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            Path filePath = uploadDir.resolve(fileName);
+            Files.write(filePath, file.getBytes());
+
+            app.setCvUrl(fileName);
+        }
 
         return applicationRepository.save(app);
     }
 
-    // 🔥 XEM ỨNG VIÊN THEO JOB (FIX CHUẨN)
+    // ================= GET BY JOB =================
     @GetMapping("/job/{jobId}")
     public List<Application> getByJob(@PathVariable Long jobId) {
-
-        System.out.println("GET APPLICATIONS FOR JOB: " + jobId);
-
         return applicationRepository.findByJob_Id(jobId);
     }
 
-    // 🔥 SEARCH / FILTER (FIX CHUẨN)
+    // ================= SEARCH (EMAIL + STATUS) =================
     @GetMapping("/job/{jobId}/search")
     public List<Application> search(
             @PathVariable Long jobId,
@@ -66,29 +81,34 @@ public class ApplicationController {
             @RequestParam(required = false) String status
     ) {
 
-        // 👉 không nhập gì → trả hết
-        if ((email == null || email.isBlank()) && (status == null || status.isBlank())) {
+        if ((email == null || email.isBlank()) &&
+            (status == null || status.isBlank())) {
+
             return applicationRepository.findByJob_Id(jobId);
         }
 
-        // 👉 filter status
         if (status != null && !status.isBlank()) {
             ApplicationStatus st = ApplicationStatus.valueOf(status.toUpperCase());
 
             if (email != null && !email.isBlank()) {
                 return applicationRepository
-                        .findByJob_IdAndEmailContainingIgnoreCaseAndStatus(jobId, email, st);
+                        .findByJob_IdAndUser_EmailContainingIgnoreCaseAndStatus(jobId, email, st);
             }
 
             return applicationRepository.findByJob_IdAndStatus(jobId, st);
         }
 
-        // 👉 chỉ search email
         return applicationRepository
-                .findByJob_IdAndEmailContainingIgnoreCase(jobId, email);
+                .findByJob_IdAndUser_EmailContainingIgnoreCase(jobId, email);
     }
 
-    // 🔥 UPDATE APPLICATION
+    // ================= GET MY APPLICATION =================
+    @GetMapping("/my")
+    public List<Application> getMyApplications(@RequestParam String email) {
+        return applicationRepository.findByUser_Email(email);
+    }
+
+    // ================= UPDATE CV =================
     @PutMapping("/{id}")
     public Application updateApplication(@PathVariable Long id,
                                          @RequestBody Application updated) {
@@ -97,15 +117,14 @@ public class ApplicationController {
                 .orElseThrow(() -> new RuntimeException("Application not found"));
 
         app.setCvUrl(updated.getCvUrl());
-        app.setEmail(updated.getEmail());
 
         return applicationRepository.save(app);
     }
 
-    // 🔥 CONTACT ỨNG VIÊN
+    // ================= CONTACT + SEND EMAIL =================
     @PutMapping("/{id}/contact")
     public Application contact(@PathVariable Long id,
-                            @RequestBody Application updated) {
+                              @RequestBody Application updated) {
 
         Application app = applicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Application not found"));
@@ -113,78 +132,39 @@ public class ApplicationController {
         app.setStatus(ApplicationStatus.CONTACTED);
         app.setMessage(updated.getMessage());
 
-        // 🔥 HTML TEMPLATE (KHÔNG + chuỗi nữa)
         String html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="UTF-8">
-    </head>
-    <body style="margin:0;padding:0;font-family:Arial;background:#f4f6f8;">
-
-    <div style="max-width:600px;margin:auto;background:white;border-radius:10px;overflow:hidden;">
-
-        <!-- HEADER -->
-        <div style="background:linear-gradient(90deg,#667eea,#764ba2);padding:20px;color:white;text-align:center;">
-        <h2>Job Portal</h2>
-        <p style="margin:0;">Your Career Partner</p>
-        </div>
-
-        <!-- BODY -->
-        <div style="padding:30px;">
-        
         <h3>Dear %s,</h3>
-
-        <p>
-            We are pleased to inform you that your application for the position 
-            <b>%s</b>
-            at 
-            <b>%s</b>
-            has been 
-            <b style="color:green;">reviewed successfully</b>.
-        </p>
-
-        <p>
-            The employer is interested in your profile and would like to proceed further.
-        </p>
-
-        <div style="text-align:center;margin:30px 0;">
-            <a href="http://localhost:3000"
-            style="background:#667eea;color:white;padding:12px 25px;
-                    text-decoration:none;border-radius:5px;font-weight:bold;">
-            View Application
-            </a>
-        </div>
-
-        <p>If you have any questions, feel free to contact us.</p>
-
-        <br/>
-
-        <p>Best regards,</p>
-        <b>%s</b>
-        </div>
-
-    </div>
-
-    </body>
-    </html>
-    """.formatted(
-                app.getEmail(),                       // %s 1
-                app.getJob().getTitle(),             // %s 2
-                app.getJob().getCompany().getName(), // %s 3
-                app.getJob().getCompany().getName()  // %s 4
+        <p>Your application for <b>%s</b> has been reviewed.</p>
+        <p>Company: <b>%s</b></p>
+        """.formatted(
+                app.getUser().getEmail(),
+                app.getJob().getTitle(),
+                app.getJob().getCompany().getName()
         );
 
-        // 🔥 SEND MAIL
         emailService.sendEmail(
-                app.getEmail(),
-                "🎉 Job Application Result",
+                app.getUser().getEmail(),
+                "Application Update",
                 html
         );
 
         return applicationRepository.save(app);
     }
-    // 🔥 DELETE
+
+    // ================= UPDATE STATUS =================
+    @PutMapping("/{id}/status")
+    public Application updateStatus(@PathVariable Long id,
+                                   @RequestParam String status) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        app.setStatus(ApplicationStatus.valueOf(status.toUpperCase()));
+
+        return applicationRepository.save(app);
+    }
+
+    // ================= DELETE =================
     @DeleteMapping("/{id}")
     public String deleteApplication(@PathVariable Long id) {
 
